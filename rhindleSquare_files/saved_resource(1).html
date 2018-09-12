@@ -1,0 +1,2600 @@
+
+<!-- saved from url=(0012)about:srcdoc -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>CAT2 Debug Output</title>
+<style>
+  .prewrap {
+    white-space: pre-wrap;       /* css-3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  }
+  /* For title of section that contains many sub-sections. */
+  .aggregated-sections-header {
+    font-weight:bold;
+  }
+  /* For contents of section that contains many sub-sections. */
+  .aggregated-sections-body {
+    margin-left: 75px;
+  }
+  /* For error messages. */
+  .error {
+    color:ff0000;
+    font-weight:bold;
+  }
+  table.scoredeb td {
+    padding-left: 5px;
+    padding-right: 10px;
+  }
+  table.scoredeb .title {
+    background:#4F7EFF;
+    color:white;
+    font-weight:bold;
+  }
+  table.scoredeb .sec {
+    background:#DFE8FF;
+    font-weight:bold;
+  }
+  table.scoredeb .subsec .name {
+    padding-left:1.5em;
+  }
+  table.scoredeb .num {
+    text-align:right;
+  }
+  table.scoredeb .desc {
+    font-weight:normal;
+  }
+  iframe.graphframe {
+    border: 1px solid black;
+  }
+</style>
+<script language="javascript" type="text/javascript">
+  window.onload = function() {
+    window.addEventListener('message', receiveMessage, false);
+  }
+
+  var groupLevelGraphUrls = {};
+
+  // The graphviz server sends js messages to this page when a graph has
+  // finished loading or when nodes are clicked. This is the responder function.
+  function receiveMessage(event) {
+    var graphvizServerDomain = 'https://graphviz.corp.google.com';
+    // Only respond to messages from the graphviz server
+    if (event.origin != graphvizServerDomain) {
+      return;
+    }
+    var currentLine = event.data.split(' ');
+    // Interested in event data with the following form:
+    // "PublisherIdentityGraphHandler url https://graphviz.corp.google.com/..."
+    if (currentLine.length == 3 && currentLine[1] == 'url') {
+      var iframeId = currentLine[0];
+      var graphUrl = currentLine[2];
+
+      // Group graph frame names are formatted "GROUP@graphname@groupname"
+      // Place the group graph's url in the grouplevelGraphs structure.
+      if (iframeId.indexOf("GROUP@") == 0) {
+        var fullGroupName = iframeId.split('@');
+        if (fullGroupName.length < 3) return;
+        var graphName = fullGroupName[1];
+        var groupName = fullGroupName[2];
+        if (!(graphName in groupLevelGraphUrls)) {
+          groupLevelGraphUrls[graphName] = {};
+        }
+        groupLevelGraphUrls[graphName][groupName] = graphUrl;
+        return;
+      } else {
+        // Normal top-level graph. Add link and window.
+        var iframe = document.getElementById(iframeId);
+        if (!iframe) return;
+        var iframeParent = GetParentNode(iframe);
+        if (!iframeParent) return;
+
+        // Add div containing an <a> link to the graph. Place below iframe.
+        var linkDiv = document.createElement('div');
+        var linkUnderGraph = '<a target="_blank" href=\"' + graphUrl
+            + '\">Link to graph</a>';
+        linkDiv.innerHTML = linkUnderGraph;
+        iframeParent.appendChild(linkDiv);
+
+        // Add class to iframe for the purpose of graph-specific styling
+        iframe.className += ' graphframe';
+        return;
+      }
+    }
+    // Response to a group node being clicked in a graph.
+    // Message format: "click@graphname@groupname" (seperated by @ sign).
+    var dashLine = event.data.split('@');
+    if (dashLine.length == 3 && dashLine[0] == 'click') {
+      // Group node was clicked. Open group graph.
+      var graphName = dashLine[1];
+      var groupName = dashLine[2];
+      if (!(graphName in groupLevelGraphUrls)) return;
+      var possibleGroups = groupLevelGraphUrls[graphName];
+      if (!(groupName in possibleGroups)) return;
+      var groupGraphUrl = possibleGroups[groupName];
+      // Open the url of the group-level graph.
+      window.open(groupGraphUrl);
+    }
+  }
+  function selectalltext(name) {
+    var text = document.getElementById(name);
+    if (document.body.createTextRange) {
+        var range = document.body.createTextRange();
+        range.moveToElementText(text);
+        range.select();
+    } else if (window.getSelection) {
+        var selection = window.getSelection();
+        var range = document.createRange();
+        range.selectNodeContents(text);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+  }
+  function displaydiv(name, show) {
+    var div = document.getElementById(name);
+    if (div) {
+      div.style.display = (show) ? 'block' : 'none';
+    }
+  }
+  function displaydiv_image(name, img_href) {
+    var myimage = document.getElementById('img_' + name);
+    if (myimage) {
+      myimage.src = img_href;
+    }
+    displaydiv(name, true);
+  }
+  function GetParentNode(n) {
+    try {
+      return n.parentNode;
+    } catch (e) {
+      return null;
+    }
+  }
+  function GotoAnchor(name) {
+    var node = document.getElementById('anchor_' + name);
+    while (node != null) {
+      if (node.tagName == 'DIV') {
+        node.style.display = 'block';
+      }
+      node = GetParentNode(node);
+    }
+    window.location.hash=name;
+  }
+</script>
+<script language="javascript" type="text/javascript" src="https://graphviz.corp.google.com/js"></script>
+</head><body marginwidth="0" marginheight="0">
+<p>Rendering Conversion Extension (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_a1&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_a1&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_a1&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_a1" class="rendering-conversion-extension" style="display:none;">contentads::bow::rendering::TextAdCreativeConversionExtension</div><p></p><p>Rendering Conversion Extension ( 1 / 66 extensions selected. ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_a2&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_a2&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_a2&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_a2" class="rendering-conversion-extension-1-66-extensions-selected" style="display:none;"><table border="1"><tbody><tr><th>Extension Name</th><th>Status Code</th><th>Status Message</th></tr>
+<tr><td>VmapCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>XmlImageAdsCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>XmlTextAdsCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>JsTrackedAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>JsImageAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>JsTextAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>JsTextTemplateAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>AwbidAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>WapImageAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>XfpImageAdsCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>DtvAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>MysidiaIdeasAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>MysidiaCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>LocationAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>MysidiaLocalProductAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>LocalProductAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>Html5SwiffyAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>Html5TemplateAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ShoppingAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>ProtoTemplateAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ImageSearchAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>MysidiaScreamAdConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ScreamAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ImageTemplateAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>CtdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ImageCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>SdkMediationAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>ImageAdsCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>RichMediaAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>GfpRawRichMediaAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>PreviewInredCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>BoostAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>GpaCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ScreamTextAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>TextAdCreativeConversionExtension</td><td>OK</td><td></td></tr>
+<tr><td>RootAnimatedTextAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XfpHtml5AdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>GfpNativeAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>GfpRichMediaAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>GoogleRenderedNativeAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>PyvCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>PyvStudioAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>BuyerSdkRenderedAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XbidAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>OutstreamVideoNativeAdNaturalizedCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>OutstreamVideoHtmlAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>SurveyHtmlCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>Html5StudioTemplateTetrisAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>Html5StudioTemplateSurveyAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>Html5StudioTemplateCommonAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XfaHtmlAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XfaImageAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>StudioAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XfaTrackingAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>NativeAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>GoogleRenderedRtbNativeCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>RadlinkCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>NativeTemplateCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>AppCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>AppPromoVideoAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>ImageTemplateCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>TextCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>Html5TemplateAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>AppPromoHtml5TemplateAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>AppPromoProtoTemplateAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>FallbackCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+</tbody></table>
+</div><p></p><p>Rendering Creative Vector ( BuildRenderingCreativeVectorProducer-0 ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_a3&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_a3&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_a3&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_a3" class="rendering-creative-vector-buildrenderingcreativevectorproducer-0" style="display:none;"><pre>===========block index:0=============
+------creative index:0------------
+-creative type:2
+text_ad_data {
+  title: "\305\240kolovanje od ku\304\207e"
+  body_line1: "U\304\215i odakle i kada tebi odgovara. Programi potpuno prilago\304\221eni tvojim potrebama."
+  is_rtl: false
+  visible_url_or_brand: "biznis-akademija.com"
+  image_url_data {
+    type: SFFE
+    original_width: 1200
+    original_height: 628
+    sffe_url: "https://tpc.googlesyndication.com/daca_images/simgad/16378469889904246730"
+  }
+  site_links {
+  }
+  type: NATIVE_TEMPLATE_AD
+  destination_url: "https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome"
+  redirect_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome"
+  view_url: "https://googleads.g.doubleclick.net/pagead/adview?ai=CFNLExeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoElgJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmMAE0Ljj1t8BiAWWq_oykgUECAQYAZIFBAgFGASgBjfYBgKAB7bRmR-oB47OG6gH1ckbqAeoBqgHugaoB9nLG6gHz8wbqAemvhuoB5jOG6gH6c0b2AcB8gcEENKtAaAI75wBsAgC0ggHCIBhEAEYAoAKAdgTAoIUERoPZ2xhbXVycHJlc3MubmV0&amp;sigh=DONgMaOhkbc&amp;template_id=492&amp;tpd=AGWhJmslzg2qLvVs2yhvJDnBc7SNwhZArHH5i3OyoTHvHSWoxg"
+  favicon_url: "https://encrypted-tbn0.gstatic.com/faviconV2?url=https://www.biznis-akademija.com/&amp;client=CONTENT_ADS_RENDERING&amp;type=FAVICON&amp;size=16&amp;fallback_opts=TYPE,SIZE,URL"
+  tracking_ad_data {
+    should_use_image_tracking_click: false
+  }
+  close_button_data {
+    show_close_button: true
+    close_button_token: "a7ZvL3S-lakIsuT5taoGEJar-jIYzv_6HyIUYml6bmlzLWFrYWRlbWlqYS5jb20yCAgFExiR_CMUQhdjYS1wdWItMDMwMzAwNzkyOTkyMTQzMEgGWDdg7ANwAQ"
+    why_this_ad_token: "AB3afGEAAAFzW1tbW251bGwsWzEwXSxudWxsLG51bGwsbnVsbCxbIjkyODA0Il1dLFtudWxsLG51bGwsW251bGwsbnVsbCxudWxsLCJodHRwczovL2Rpc3BsYXlhZHMtZm9ybWF0cy5nb29nbGV1c2VyY29udGVudC5jb20vYWRzL3ByZXZpZXcvY29udGVudC5qcz9jbGllbnQ9d3RhXHUwMDI2b2JmdXNjYXRlZEN1c3RvbWVySWQ9MzUzNjUwMzAwNlx1MDAyNmNyZWF0aXZlSWQ9MjU4MDgwNjU2NzE5XHUwMDI2dmVyc2lvbklkPTBcdTAwMjZhZEdyb3VwQ3JlYXRpdmVJZD0yMTc1NDU4NjM3MzBcdTAwMjZodG1sUGFyZW50SWQ9cHJldi0wXHUwMDI2aGVpZ2h0PTBcdTAwMjZ3aWR0aD0wXHUwMDI2c2lnPUFDaVZCX3kwUENyNnNhbFJTS1E0NjhZX2h4YzRta1p0X2ciXV1dXV2TZSyWRDJPXJ9hw3jsMHcBDP40Ejcd88P-fR0YVOS8gVlpnltCYG4mmrMDzVrxOO76EuG28c1274JfBeaKwQuxKCOVUmRlTrDbgs46zn5Qy9OEfI27tfZkpCr4ZVlUvV4YJ67LHEwn2IXjkk_bQ7Zlg2uKJgamzfC1AEnt2KIjs-i2LKwoD6VIXXix9hgSrBCbK9e9YEPXyFprgC9Z7pSGN7LFWP2YpO84otX3kt4A1SmHf8J_k6Bzsq4uqtGRPnEamZxHDjHxFb883HAJhHOoy3zHJeDXxrRuLxRZXPHbkHOh8nPTOfeN3kbCNpRtHHMir1ILW1JV5zwGdNDfujbh,-c1ytS3bcRIJ5kMZDc7h7Q"
+    mute_menu_options {
+      id: DONT_LIKE_CONTENT_OF_THIS_AD
+      mute_survey_options {
+        id: REPETITIVE_AD
+      }
+      mute_survey_options {
+        id: UNINTERESTING_AD
+      }
+      mute_survey_options {
+        id: INAPPROPRIATE_AD
+      }
+      mute_survey_options {
+        id: AD_COVERING_PAGE_CONTENT
+      }
+      mute_survey_type: MULTIPLE_CHOICE_SURVEY
+    }
+    why_this_ad_on_idfe: true
+    why_this_ad {
+      targeting_reasons {
+        ad_reason: INTEREST_COARSE
+        vertical_id: 92804
+        explanation {
+          introduction: "\320\236\320\262\320\276 \321\230\320\265 \320\273\320\270\321\201\321\202\320\260 \320\270\320\267\320\262\320\276\321\200\320\260 \320\270\320\275\321\204\320\276\321\200\320\274\320\260\321\206\320\270\321\230\320\260 \320\275\320\260 \320\276\321\201\320\275\320\276\320\262\321\203 \320\272\320\276\321\230\320\270\321\205 \320\276\320\264\320\273\321\203\321\207\321\203\321\230\320\265\320\274\320\276 \320\264\320\260 \320\262\320\260\320\274 \320\277\321\200\320\270\320\272\320\260\320\267\321\203\321\230\320\265\320\274\320\276 \320\276\320\262\320\260\321\230 \320\276\320\263\320\273\320\260\321\201:"
+          item {
+            description: "Google \320\277\321\200\320\276\321\206\320\265\320\275\320\260 \320\262\320\260\321\210\320\270\321\205 \320\270\320\275\321\202\320\265\321\200\320\265\321\201\320\276\320\262\320\260\321\232\320\260"
+          }
+        }
+      }
+      preview_url: "https://displayads-formats.googleusercontent.com/ads/preview/content.js?client=wta&amp;obfuscatedCustomerId=3536503006&amp;creativeId=258080656719&amp;versionId=0&amp;adGroupCreativeId=217545863730&amp;htmlParentId=prev-0&amp;height=0&amp;width=0&amp;sig=ACiVB_y0PCr6salRSKQ468Y_hxc4mkZt_g"
+    }
+  }
+  creative_conversion_url_without_label: "https://googleads.g.doubleclick.net/pagead/conversion/?ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;sigh=wfXtzvnu0WM"
+  ad_language: "hr"
+  adgroup_creative_id: 217545863730
+  u2_final_url: "https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome"
+  advertiser: "BusinessAcademy"
+  title_line1: "\305\240kolovanje od ku\304\207e"
+  long_title: "U\304\215i odakle i kada tebi odgovara. Upis po sni\305\276enim cijenama u toku"
+  logo_image {
+    type: SFFE
+    original_width: 1200
+    original_height: 1200
+    sffe_url: "https://tpc.googlesyndication.com/daca_images/simgad/14174002585195600746"
+  }
+  title_line2: ""
+  is_dra_creative: true
+  is_eta_creative: false
+  brand_safe_color_data {
+    main_color: "#1C1D1A"
+    accent_color: "#1C1D1A"
+  }
+}
+-common data:
+common_urls {
+  redirect_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome"
+  visible_url: "biznis-akademija.com"
+  link_description_text: "biznis-akademija.com"
+}
+event_urls {
+  click_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome"
+  view_url: "https://googleads.g.doubleclick.net/pagead/adview?ai=CFNLExeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoElgJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmMAE0Ljj1t8BiAWWq_oykgUECAQYAZIFBAgFGASgBjfYBgKAB7bRmR-oB47OG6gH1ckbqAeoBqgHugaoB9nLG6gHz8wbqAemvhuoB5jOG6gH6c0b2AcB8gcEENKtAaAI75wBsAgC0ggHCIBhEAEYAoAKAdgTAoIUERoPZ2xhbXVycHJlc3MubmV0&amp;sigh=DONgMaOhkbc&amp;template_id=492&amp;tpd=AGWhJmslzg2qLvVs2yhvJDnBc7SNwhZArHH5i3OyoTHvHSWoxg"
+}
+creative_setting {
+  is_amp_dest_url: false
+}
+creative_type: 55
+
+</pre></div><p></p><p>Rendering Creative Vector Proto Form ( BuildRenderingCreativeVectorProducer-0 ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_a4&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_a4&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_a4&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_a4" class="rendering-creative-vector-proto-form-buildrenderingcreativevectorproducer-0" style="display:none;"><pre>creative {
+  data {
+    type_url: "type.googleapis.com/contentads.bow.rendering.OnePartialSlotData"
+    value: "\n\303%\n\024\305\240kolovanje od ku\304\207e\022QU\304\215i odakle i kada tebi odgovara. Programi potpuno prilago\304\221eni tvojim potrebama. \000:\024biznis-akademija.comBS\010\003(\260\t0\364\004rIhttps://tpc.googlesyndication.com/daca_images/simgad/16378469889904246730j\000x\004\202\001ahttps://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome\212\001\220\007https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome\222\001\242\006https://googleads.g.doubleclick.net/pagead/adview?ai=CFNLExeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoElgJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmMAE0Ljj1t8BiAWWq_oykgUECAQYAZIFBAgFGASgBjfYBgKAB7bRmR-oB47OG6gH1ckbqAeoBqgHugaoB9nLG6gHz8wbqAemvhuoB5jOG6gH6c0b2AcB8gcEENKtAaAI75wBsAgC0ggHCIBhEAEYAoAKAdgTAoIUERoPZ2xhbXVycHJlc3MubmV0&amp;sigh=DONgMaOhkbc&amp;template_id=492&amp;tpd=AGWhJmslzg2qLvVs2yhvJDnBc7SNwhZArHH5i3OyoTHvHSWoxg\252\001\240\001https://encrypted-tbn0.gstatic.com/faviconV2?url=https://www.biznis-akademija.com/&amp;client=CONTENT_ADS_RENDERING&amp;type=FAVICON&amp;size=16&amp;fallback_opts=TYPE,SIZE,URL\262\001\002\010\000\272\001\367\013\010\001\022za7ZvL3S-lakIsuT5taoGEJar-jIYzv_6HyIUYml6bmlzLWFrYWRlbWlqYS5jb20yCAgFExiR_CMUQhdjYS1wdWItMDMwMzAwNzkyOTkyMTQzMEgGWDdg7ANwAQ\032\347\006AB3afGEAAAFzW1tbW251bGwsWzEwXSxudWxsLG51bGwsbnVsbCxbIjkyODA0Il1dLFtudWxsLG51bGwsW251bGwsbnVsbCxudWxsLCJodHRwczovL2Rpc3BsYXlhZHMtZm9ybWF0cy5nb29nbGV1c2VyY29udGVudC5jb20vYWRzL3ByZXZpZXcvY29udGVudC5qcz9jbGllbnQ9d3RhXHUwMDI2b2JmdXNjYXRlZEN1c3RvbWVySWQ9MzUzNjUwMzAwNlx1MDAyNmNyZWF0aXZlSWQ9MjU4MDgwNjU2NzE5XHUwMDI2dmVyc2lvbklkPTBcdTAwMjZhZEdyb3VwQ3JlYXRpdmVJZD0yMTc1NDU4NjM3MzBcdTAwMjZodG1sUGFyZW50SWQ9cHJldi0wXHUwMDI2aGVpZ2h0PTBcdTAwMjZ3aWR0aD0wXHUwMDI2c2lnPUFDaVZCX3kwUENyNnNhbFJTS1E0NjhZX2h4YzRta1p0X2ciXV1dXV2TZSyWRDJPXJ9hw3jsMHcBDP40Ejcd88P-fR0YVOS8gVlpnltCYG4mmrMDzVrxOO76EuG28c1274JfBeaKwQuxKCOVUmRlTrDbgs46zn5Qy9OEfI27tfZkpCr4ZVlUvV4YJ67LHEwn2IXjkk_bQ7Zlg2uKJgamzfC1AEnt2KIjs-i2LKwoD6VIXXix9hgSrBCbK9e9YEPXyFprgC9Z7pSGN7LFWP2YpO84otX3kt4A1SmHf8J_k6Bzsq4uqtGRPnEamZxHDjHxFb883HAJhHOoy3zHJeDXxrRuLxRZXPHbkHOh8nPTOfeN3kbCNpRtHHMir1ILW1JV5zwGdNDfujbh,-c1ytS3bcRIJ5kMZDc7h7Q\"\024\010\001\022\002\010\002\022\002\010\007\022\002\010\010\022\002\010\003\030\001(\0012\364\003*\355\001\020\n0\204\325\005B\344\001\n\244\001\320\236\320\262\320\276 \321\230\320\265 \320\273\320\270\321\201\321\202\320\260 \320\270\320\267\320\262\320\276\321\200\320\260 \320\270\320\275\321\204\320\276\321\200\320\274\320\260\321\206\320\270\321\230\320\260 \320\275\320\260 \320\276\321\201\320\275\320\276\320\262\321\203 \320\272\320\276\321\230\320\270\321\205 \320\276\320\264\320\273\321\203\321\207\321\203\321\230\320\265\320\274\320\276 \320\264\320\260 \320\262\320\260\320\274 \320\277\321\200\320\270\320\272\320\260\320\267\321\203\321\230\320\265\320\274\320\276 \320\276\320\262\320\260\321\230 \320\276\320\263\320\273\320\260\321\201:\022;\n9Google \320\277\321\200\320\276\321\206\320\265\320\275\320\260 \320\262\320\260\321\210\320\270\321\205 \320\270\320\275\321\202\320\265\321\200\320\265\321\201\320\276\320\262\320\260\321\232\320\260:\201\002https://displayads-formats.googleusercontent.com/ads/preview/content.js?client=wta&amp;obfuscatedCustomerId=3536503006&amp;creativeId=258080656719&amp;versionId=0&amp;adGroupCreativeId=217545863730&amp;htmlParentId=prev-0&amp;height=0&amp;width=0&amp;sig=ACiVB_y0PCr6salRSKQ468Y_hxc4mkZt_g\302\001\317\005https://googleads.g.doubleclick.net/pagead/conversion/?ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;sigh=wfXtzvnu0WM\352\001\002hr\260\002\262\344\371\265\252\006\202\003ahttps://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome\312\003\017BusinessAcademy\232\004\024\305\240kolovanje od ku\304\207e\242\004CU\304\215i odakle i kada tebi odgovara. Upis po sni\305\276enim cijenama u toku\272\004S\010\003(\260\t0\260\trIhttps://tpc.googlesyndication.com/daca_images/simgad/14174002585195600746\312\004\000\320\004\001\330\004\000\202\006\022\n\007#1C1D1A\022\007#1C1D1A"
+  }
+  common_data {
+    common_urls {
+      redirect_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome"
+      visible_url: "biznis-akademija.com"
+      link_description_text: "biznis-akademija.com"
+    }
+    event_urls {
+      click_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome"
+      view_url: "https://googleads.g.doubleclick.net/pagead/adview?ai=CFNLExeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoElgJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmMAE0Ljj1t8BiAWWq_oykgUECAQYAZIFBAgFGASgBjfYBgKAB7bRmR-oB47OG6gH1ckbqAeoBqgHugaoB9nLG6gHz8wbqAemvhuoB5jOG6gH6c0b2AcB8gcEENKtAaAI75wBsAgC0ggHCIBhEAEYAoAKAdgTAoIUERoPZ2xhbXVycHJlc3MubmV0&amp;sigh=DONgMaOhkbc&amp;template_id=492&amp;tpd=AGWhJmslzg2qLvVs2yhvJDnBc7SNwhZArHH5i3OyoTHvHSWoxg"
+    }
+    creative_setting {
+      is_amp_dest_url: false
+    }
+    creative_type: 55
+  }
+}
+</pre></div><p></p><p>Layout Rendering Infos (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_aa&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_aa&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_aa&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_aa" class="layout-rendering-infos" style="display:none;"><pre>layout_rendering_info {
+  textual_layout: RHINDLE_MAGNETO_SMALL_NO_BODY
+  asa_language: SR
+  chrome_ui_spec {
+    ad_slot_width: 300
+    ad_slot_height: 250
+    ads_left: 0
+    ads_top: 0
+    ads_width: 300
+    ads_height: 250
+    border_thickness: 0
+    chrome_bottom_height: 0
+    chrome_top_height: 0
+    chrome_left_width: 0
+    chrome_right_width: 0
+    ads_allocated_width: 300
+    ads_allocated_height: 250
+    max_ads_bottom_truncation: 0
+    outer_ad_slot_width: 0
+    outer_ad_slot_height: 0
+  }
+  add_separator_between_ads: true
+  nessie_button_position: RIGHT
+  creative_rendering_info {
+    width: 300
+    height: 242
+    score: 4644
+    expand_level: 1
+    language: HR
+    collapsed_height: 0
+    collapsed_score: 0
+    collapsed_expand_level: 1
+    layout {
+      root_box {
+        type: VERTICAL_FLOW_BOX
+        range_message {
+          padding_left {
+            level: 0.5
+            value: 0
+          }
+          padding_right {
+            level: 0.5
+            value: 0
+          }
+          padding_bottom {
+            level: 0.5
+            value: 0
+          }
+          padding_top {
+            level: 0.5
+            value: 0
+          }
+        }
+        computed_message {
+          is_disabled: false
+          outer_width: 300
+          outer_height: 250
+          content_width: 300
+          content_height: 250
+          x: 0
+          y: 0
+          padding_left: 0
+          padding_right: 0
+          padding_top: 0
+          padding_bottom: 0
+          background_color: "#ffffff"
+        }
+        children {
+          type: EMPTY_BOX
+          range_message {
+            min_content_width {
+              level: 0.5
+              value: 0
+            }
+            min_content_height {
+              level: 0.5
+              value: 1
+            }
+          }
+          computed_message {
+            is_disabled: false
+            outer_width: 300
+            outer_height: 1
+            content_width: 300
+            content_height: 1
+            x: 0
+            y: 0
+            padding_left: 0
+            padding_right: 0
+            padding_top: 0
+            padding_bottom: 0
+            background_color: "#e9e9e9"
+          }
+          vertical_rendering_mode: FIXED
+          horizontal_rendering_mode: FIXED
+          background_color {
+            source: BORDER_COLOR
+          }
+        }
+        children {
+          type: HORIZONTAL_FLOW_BOX
+          range_message {
+          }
+          computed_message {
+            is_disabled: false
+            outer_width: 300
+            outer_height: 248
+            content_width: 300
+            content_height: 248
+            x: 0
+            y: 1
+            padding_left: 0
+            padding_right: 0
+            padding_top: 0
+            padding_bottom: 0
+          }
+          children {
+            type: EMPTY_BOX
+            range_message {
+              min_content_width {
+                level: 0.5
+                value: 1
+              }
+              min_content_height {
+                level: 0.5
+                value: 0
+              }
+            }
+            computed_message {
+              is_disabled: false
+              outer_width: 1
+              outer_height: 248
+              content_width: 1
+              content_height: 248
+              x: 0
+              y: 1
+              padding_left: 0
+              padding_right: 0
+              padding_top: 0
+              padding_bottom: 0
+              background_color: "#e9e9e9"
+            }
+            vertical_rendering_mode: FIXED
+            horizontal_rendering_mode: FIXED
+            background_color {
+              source: BORDER_COLOR
+            }
+          }
+          children {
+            type: VERTICAL_FLOW_BOX
+            range_message {
+            }
+            computed_message {
+              is_disabled: false
+              outer_width: 298
+              outer_height: 248
+              content_width: 298
+              content_height: 248
+              x: 1
+              y: 1
+              padding_left: 0
+              padding_right: 0
+              padding_top: 0
+              padding_bottom: 0
+            }
+            children {
+              type: IMAGE_BOX
+              is_disabled: false
+              range_message {
+                min_content_width {
+                  level: 0.5
+                  value: 0
+                }
+                min_content_height {
+                  level: 0.5
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.523
+                    constant: 0
+                  }
+                }
+              }
+              computed_message {
+                is_disabled: false
+                outer_width: 298
+                outer_height: 157
+                content_width: 298
+                content_height: 157
+                x: 1
+                y: 1
+                padding_left: 0
+                padding_right: 0
+                padding_top: 0
+                padding_bottom: 0
+              }
+              css_class: "rh-image"
+              vertical_rendering_mode: FLOW
+              horizontal_rendering_mode: FLOW
+              elasticity: 1
+              elastic_aspect_ratio: 1.9
+              labels: "hide_if_rtb_ad"
+              image_box_options {
+                is_mandatory: true
+                hover_effect: NO_EFFECT
+                use_max_size_mode: true
+                sffe_url_options {
+                  supported_image_sizes {
+                    width: 400
+                    height: 209
+                  }
+                  supported_image_sizes {
+                    width: 600
+                    height: 314
+                  }
+                  supported_image_sizes {
+                    width: 1200
+                    height: 628
+                  }
+                }
+                four_way_padding_threshold: 10
+                four_way_padding_options {
+                  background_color: "rgba(128,128,128,0.02)"
+                  fallback_background_color: "#E9E9E9"
+                  border_size: 5
+                  padding_always_on: false
+                  background_size: 150
+                  blur_value: 10
+                  border_color: "rgb(128,128,128)"
+                }
+              }
+              dom_data {
+                dom_intentful_click_data {
+                  protections {
+                    border: "15,15,10,15"
+                    priority: 0
+                    protection_approach: PREVENT_EVENT
+                  }
+                }
+              }
+              css: ".rhimage img{border:none}"
+            }
+            children {
+              type: IMAGE_BOX
+              is_disabled: true
+              range_message {
+                min_content_width {
+                  level: 0.5
+                  value: 0
+                }
+                min_content_height {
+                  level: 0.5
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.523
+                    constant: 0
+                  }
+                }
+              }
+              computed_message {
+                is_disabled: true
+              }
+              css_class: "rh-image"
+              vertical_rendering_mode: FLOW
+              horizontal_rendering_mode: FLOW
+              elasticity: 1
+              elastic_aspect_ratio: 1.9
+              labels: "show_if_rtb_ad"
+              image_box_options {
+                is_mandatory: true
+                hover_effect: NO_EFFECT
+                use_max_size_mode: true
+                sffe_url_options {
+                  supported_image_sizes {
+                    width: 400
+                    height: 209
+                  }
+                  supported_image_sizes {
+                    width: 600
+                    height: 314
+                  }
+                  supported_image_sizes {
+                    width: 1200
+                    height: 628
+                  }
+                }
+                four_way_padding_options {
+                  background_color: "rgba(128,128,128,0.02)"
+                  fallback_background_color: "#E9E9E9"
+                  border_size: 5
+                  padding_always_on: true
+                  background_size: 150
+                  blur_value: 10
+                  border_color: "rgb(128,128,128)"
+                }
+              }
+              dom_data {
+                dom_intentful_click_data {
+                  protections {
+                    border: "15,15,10,15"
+                    priority: 0
+                    protection_approach: PREVENT_EVENT
+                  }
+                }
+              }
+              css: ".rhimage img{border:none}"
+            }
+            children {
+              type: HORIZONTAL_FLOW_BOX
+              range_message {
+                padding_left {
+                  level: 0.5
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.05
+                    constant: 0
+                  }
+                }
+                padding_right {
+                  level: 0.5
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.04
+                    constant: 0
+                  }
+                }
+                padding_top {
+                  level: 0.5
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.04
+                    constant: 0
+                  }
+                }
+              }
+              computed_message {
+                is_disabled: false
+                outer_width: 298
+                outer_height: 57
+                content_width: 271
+                content_height: 45
+                x: 1
+                y: 158
+                padding_left: 15
+                padding_right: 12
+                padding_top: 12
+                padding_bottom: 0
+              }
+              children {
+                type: LOGO_BOX
+                range_message {
+                  padding_right {
+                    level: 0.5
+                    expression_value {
+                      type: AD_UNIT_WIDTH
+                      multiplicative_factor: 0.04
+                      constant: 0
+                    }
+                  }
+                  min_content_width {
+                    level: 0.5
+                    expression_value {
+                      type: AD_UNIT_WIDTH
+                      multiplicative_factor: 0.15
+                      constant: 0
+                    }
+                  }
+                  min_content_height {
+                    level: 0.5
+                    expression_value {
+                      type: AD_UNIT_WIDTH
+                      multiplicative_factor: 0.15
+                      constant: 0
+                    }
+                  }
+                }
+                computed_message {
+                  is_disabled: false
+                  outer_width: 57
+                  outer_height: 45
+                  content_width: 45
+                  content_height: 45
+                  x: 16
+                  y: 170
+                  padding_left: 0
+                  padding_right: 12
+                  padding_top: 0
+                  padding_bottom: 0
+                }
+                vertical_rendering_mode: FIXED
+                horizontal_rendering_mode: FIXED
+                logo_box_options {
+                  is_clickable: true
+                  sffe_url_options {
+                    supported_image_sizes {
+                      width: 128
+                      height: 128
+                    }
+                    supported_image_sizes {
+                      width: 200
+                      height: 200
+                    }
+                    supported_image_sizes {
+                      width: 300
+                      height: 300
+                    }
+                  }
+                }
+              }
+              children {
+                type: VERTICAL_FLOW_BOX
+                range_message {
+                }
+                computed_message {
+                  is_disabled: false
+                  outer_width: 214
+                  outer_height: 45
+                  content_width: 214
+                  content_height: 45
+                  x: 73
+                  y: 170
+                  padding_left: 0
+                  padding_right: 0
+                  padding_top: 0
+                  padding_bottom: 0
+                }
+                children {
+                  type: EMPTY_BOX
+                  range_message {
+                    min_content_width {
+                      level: 0.5
+                      value: 0
+                    }
+                    min_content_height {
+                      level: 0.5
+                      value: 0
+                    }
+                  }
+                  computed_message {
+                    is_disabled: false
+                    outer_width: 214
+                    outer_height: 4
+                    content_width: 214
+                    content_height: 4
+                    x: 73
+                    y: 170
+                    padding_left: 0
+                    padding_right: 0
+                    padding_top: 0
+                    padding_bottom: 0
+                  }
+                  vertical_rendering_mode: FIXED
+                  horizontal_rendering_mode: FIXED
+                  elasticity: 10
+                }
+                children {
+                  type: LONG_TITLE_BOX
+                  range_message {
+                    font_size {
+                      level: 0
+                      level: 1
+                      expression_value {
+                        type: AD_UNIT_WIDTH
+                        multiplicative_factor: 0.04
+                        constant: 0
+                      }
+                      expression_value {
+                        type: AD_UNIT_WIDTH
+                        multiplicative_factor: 0.047
+                        constant: 0
+                      }
+                    }
+                    partial_text_amount {
+                      level: 0
+                      level: 1
+                      value: 0
+                      value: 1
+                    }
+                  }
+                  computed_message {
+                    is_disabled: false
+                    outer_width: 214
+                    outer_height: 37
+                    content_width: 214
+                    content_height: 37
+                    x: 73
+                    y: 174
+                    padding_left: 0
+                    padding_right: 0
+                    padding_top: 0
+                    padding_bottom: 0
+                    font_size: 14
+                    font_color: "#212121"
+                    font_rendering_spec {
+                      font_family: ROBOTO_LIGHT
+                      font_weight: MEDIUM
+                      font_weight_value: 500
+                      font_family_css: "\"Roboto\",arial,sans-serif"
+                      web_font_names: "Roboto"
+                    }
+                    content_lines: "UÄi odakle i kada tebi odgovara. "
+                    content_lines: "Upis po sniÅ¾enim cijenama u â¦"
+                  }
+                  css_class: "rh-title"
+                  vertical_align: MIDDLE
+                  horizontal_align: LEFT
+                  vertical_rendering_mode: FIXED
+                  horizontal_rendering_mode: FIXED
+                  rendering_type: TEXT_AD_TITLE_ELEMENT
+                  elasticity: 1
+                  font_weight: MEDIUM
+                  line_height: 1.3
+                  overflow: OVERFLOW_VISIBLE
+                  max_text_lines_to_show: 2
+                  min_text_em_to_show_when_truncated: 20
+                  title_box_options {
+                    is_clickable: true
+                  }
+                  font_color {
+                    source: TITLE_COLOR
+                  }
+                  css: ".rhlongtitle{text-decoration:none}"
+                  force_linebreaks: true
+                  num_chars: 50
+                  cjk_num_chars: 25
+                }
+                children {
+                  type: EMPTY_BOX
+                  range_message {
+                    min_content_width {
+                      level: 0.5
+                      value: 0
+                    }
+                    min_content_height {
+                      level: 0.5
+                      value: 0
+                    }
+                  }
+                  computed_message {
+                    is_disabled: false
+                    outer_width: 214
+                    outer_height: 4
+                    content_width: 214
+                    content_height: 4
+                    x: 73
+                    y: 211
+                    padding_left: 0
+                    padding_right: 0
+                    padding_top: 0
+                    padding_bottom: 0
+                  }
+                  vertical_rendering_mode: FIXED
+                  horizontal_rendering_mode: FIXED
+                  elasticity: 10
+                }
+                vertical_rendering_mode: FIXED
+                horizontal_rendering_mode: FIXED
+                elasticity: 1
+                overflow: OVERFLOW_VISIBLE
+              }
+              vertical_align: MIDDLE
+              vertical_rendering_mode: FIXED
+              horizontal_rendering_mode: FIXED
+              elasticity: 1
+              overflow: OVERFLOW_VISIBLE
+              elastic_length {
+                level: 0.5
+                expression_value {
+                  type: AD_UNIT_WIDTH
+                  multiplicative_factor: 0.16
+                  constant: 0
+                }
+              }
+            }
+            children {
+              type: EMPTY_BOX
+              range_message {
+                min_content_width {
+                  level: 0.5
+                  value: 0
+                }
+                min_content_height {
+                  level: 0.5
+                  value: 0
+                }
+              }
+              computed_message {
+                is_disabled: false
+                outer_width: 298
+                outer_height: 3
+                content_width: 298
+                content_height: 3
+                x: 1
+                y: 215
+                padding_left: 0
+                padding_right: 0
+                padding_top: 0
+                padding_bottom: 0
+              }
+              vertical_rendering_mode: FIXED
+              horizontal_rendering_mode: FIXED
+              elasticity: 1
+            }
+            children {
+              type: HORIZONTAL_FLOW_BOX
+              range_message {
+                padding_left {
+                  level: 0.5
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.05
+                    constant: 0
+                  }
+                }
+                padding_right {
+                  level: 0.5
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.04
+                    constant: 0
+                  }
+                }
+                padding_bottom {
+                  level: 0.5
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.016
+                    constant: 0
+                  }
+                }
+                padding_top {
+                  level: 0.5
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.01
+                    constant: 0
+                  }
+                }
+              }
+              computed_message {
+                is_disabled: false
+                outer_width: 298
+                outer_height: 28
+                content_width: 271
+                content_height: 20
+                x: 1
+                y: 218
+                padding_left: 15
+                padding_right: 12
+                padding_top: 3
+                padding_bottom: 5
+              }
+              children {
+                type: URL_BOX
+                range_message {
+                  padding_right {
+                    level: 0.5
+                    value: 9
+                  }
+                  padding_top {
+                    level: 0.5
+                    expression_value {
+                      type: AD_UNIT_WIDTH
+                      multiplicative_factor: 0.01
+                      constant: 0
+                    }
+                  }
+                  font_size {
+                    level: 0
+                    level: 1
+                    expression_value {
+                      type: AD_UNIT_WIDTH
+                      multiplicative_factor: 0.036
+                      constant: 0
+                    }
+                    expression_value {
+                      type: AD_UNIT_WIDTH
+                      multiplicative_factor: 0.039
+                      constant: 0
+                    }
+                  }
+                }
+                computed_message {
+                  is_disabled: false
+                  outer_width: 161
+                  outer_height: 20
+                  content_width: 152
+                  content_height: 17
+                  x: 16
+                  y: 221
+                  padding_left: 0
+                  padding_right: 9
+                  padding_top: 3
+                  padding_bottom: 0
+                  font_size: 12
+                  font_color: "#474747"
+                  font_rendering_spec {
+                    font_family: ROBOTO_LIGHT
+                    font_weight: NORMAL
+                    font_weight_value: 400
+                    font_family_css: "\"Roboto\",arial,sans-serif"
+                    web_font_names: "Roboto"
+                  }
+                }
+                css_class: "rh-url"
+                vertical_align: MIDDLE
+                horizontal_align: LEFT
+                vertical_rendering_mode: FLOW
+                horizontal_rendering_mode: FIXED
+                one_line: true
+                one_line_horizontal_shrinkage: 0.1
+                rendering_type: TEXT_AD_URL_ELEMENT
+                elasticity: 1
+                extra_css {
+                  property: "color"
+                  selector_suffix: " .rhurl"
+                  value_color {
+                    source: URL_COLOR
+                  }
+                }
+                extra_css {
+                  property: "display"
+                  value: "inline"
+                  selector_suffix: " .rhurl span"
+                }
+                extra_css {
+                  property: "text-overflow"
+                  value: "ellipsis"
+                  selector_suffix: ""
+                }
+                labels: "no_favicon"
+                labels: "cut_vis_url_to_host"
+                font_weight: NORMAL
+                line_height: 1.2
+                overflow: OVERFLOW_VISIBLE
+                font_color {
+                  source: URL_COLOR
+                }
+              }
+              children {
+                type: NESSIE_BUTTON_BOX
+                is_disabled: false
+                range_message {
+                  font_size {
+                    level: 0.5
+                    expression_value {
+                      type: AD_UNIT_WIDTH
+                      multiplicative_factor: 0.045
+                      constant: 0
+                    }
+                  }
+                  min_content_width {
+                    level: 0.5
+                    value: 0
+                  }
+                  min_content_height {
+                    level: 0.5
+                    expression_value {
+                      type: AD_UNIT_WIDTH
+                      multiplicative_factor: 0.06
+                      constant: 0
+                    }
+                  }
+                }
+                computed_message {
+                  is_disabled: false
+                  outer_width: 110
+                  outer_height: 20
+                  content_width: 110
+                  content_height: 18
+                  x: 177
+                  y: 221
+                  padding_left: 0
+                  padding_right: 0
+                  padding_top: 0
+                  padding_bottom: 0
+                  font_size: 14
+                  button_box_computations {
+                    button_border_radius: 0
+                    button_border_width: 0
+                    button_icon_height: 13
+                    button_icon_max_width: 13
+                    button_icon_leading_padding: 1
+                    button_container_width: 258
+                    is_button_message_center_expanded: false
+                  }
+                }
+                css_class: "rh-nessie-button"
+                vertical_align: MIDDLE
+                horizontal_align: RIGHT
+                vertical_rendering_mode: FIXED
+                horizontal_rendering_mode: FLOW
+                extra_css {
+                  property: "background-color"
+                  selector_suffix: " .rhbutton"
+                  value_color {
+                    source: BACKGROUND_COLOR
+                  }
+                }
+                extra_css {
+                  property: "font-weight"
+                  value: "500"
+                  selector_suffix: " .rhbutton"
+                }
+                restrict_to_min_content_size: true
+                button_box_options {
+                  max_icon_aspect_ratio: 1
+                  max_icon_height_ratio: 0.75
+                  border_width: 0
+                  rounded_corners_ratio: 0
+                  default_icon_rendering {
+                    one_point_five_click_mode: EXPANDED
+                    override_aspect_ratio: 1
+                    svg_png_icon_options {
+                      icon_id: NESSIE_TIAMAT_ICON
+                    }
+                  }
+                  ctc_icon_rendering {
+                    override_aspect_ratio: 1
+                    svg_png_icon_options {
+                      icon_id: CTC_ICON
+                    }
+                  }
+                  download_icon_rendering {
+                    svg_png_icon_options {
+                      icon_id: DOWNLOAD_ICON
+                    }
+                  }
+                  position: BUTTON_RIGHT
+                  hide_icon: false
+                  message_type: LEARN_MORE
+                  message_sized_button: true
+                  message_padding {
+                    level: 0.5
+                    expression_value {
+                      type: AD_UNIT_WIDTH
+                      multiplicative_factor: 0.046
+                      constant: 0
+                    }
+                  }
+                  icon_color {
+                    source: TITLE_COLOR
+                  }
+                  color {
+                    source: TITLE_COLOR
+                  }
+                  use_creative_language: true
+                }
+                content_message {
+                  icon_rendering_type: DEFAULT_ICON_RENDERING
+                }
+              }
+              vertical_align: MIDDLE
+              vertical_rendering_mode: FIXED
+              horizontal_rendering_mode: FIXED
+              elasticity: 1
+              overflow: OVERFLOW_VISIBLE
+            }
+            children {
+              type: EMPTY_BOX
+              range_message {
+                min_content_width {
+                  level: 0.5
+                  value: 0
+                }
+                min_content_height {
+                  level: 0.5
+                  value: 0
+                }
+              }
+              computed_message {
+                is_disabled: false
+                outer_width: 298
+                outer_height: 3
+                content_width: 298
+                content_height: 3
+                x: 1
+                y: 246
+                padding_left: 0
+                padding_right: 0
+                padding_top: 0
+                padding_bottom: 0
+              }
+              vertical_rendering_mode: FIXED
+              horizontal_rendering_mode: FIXED
+              elasticity: 1
+              elastic_length {
+                level: 0.5
+                expression_value {
+                  type: AD_UNIT_WIDTH
+                  multiplicative_factor: 0.03
+                  constant: 0
+                }
+              }
+            }
+            vertical_rendering_mode: FLOW
+            horizontal_rendering_mode: FIXED
+            elasticity: 1
+          }
+          children {
+            type: EMPTY_BOX
+            range_message {
+              min_content_width {
+                level: 0.5
+                value: 1
+              }
+              min_content_height {
+                level: 0.5
+                value: 0
+              }
+            }
+            computed_message {
+              is_disabled: false
+              outer_width: 1
+              outer_height: 248
+              content_width: 1
+              content_height: 248
+              x: 299
+              y: 1
+              padding_left: 0
+              padding_right: 0
+              padding_top: 0
+              padding_bottom: 0
+              background_color: "#e9e9e9"
+            }
+            vertical_rendering_mode: FIXED
+            horizontal_rendering_mode: FIXED
+            background_color {
+              source: BORDER_COLOR
+            }
+          }
+          vertical_rendering_mode: FIXED
+          horizontal_rendering_mode: FLOW
+          elasticity: 1
+        }
+        children {
+          type: EMPTY_BOX
+          range_message {
+            min_content_width {
+              level: 0.5
+              value: 0
+            }
+            min_content_height {
+              level: 0.5
+              value: 1
+            }
+          }
+          computed_message {
+            is_disabled: false
+            outer_width: 300
+            outer_height: 1
+            content_width: 300
+            content_height: 1
+            x: 0
+            y: 249
+            padding_left: 0
+            padding_right: 0
+            padding_top: 0
+            padding_bottom: 0
+            background_color: "#e9e9e9"
+          }
+          vertical_rendering_mode: FIXED
+          horizontal_rendering_mode: FIXED
+          background_color {
+            source: BORDER_COLOR
+          }
+        }
+        vertical_rendering_mode: FIXED
+        horizontal_rendering_mode: FIXED
+        background_color {
+          source: BACKGROUND_COLOR
+        }
+      }
+      textual_layout: "RHINDLE_MAGNETO_SMALL_NO_BODY"
+      rules {
+        decision: MULTIPLY_SCORE
+        condition {
+          statement: ALWAYS_TRUE
+        }
+        score_multiplier: 1000
+      }
+      rules {
+        decision: REJECT
+        condition {
+          operation: OR
+          operands {
+            operation: NOT
+            operands {
+              statement: NUM_ADS_IS
+              int_value: 1
+            }
+          }
+          operands {
+            statement: HAS_PRODUCT_AD
+            bool_value: true
+          }
+          operands {
+            statement: HAS_APP_PROMO_DATA
+            bool_value: true
+          }
+        }
+      }
+      rules {
+        decision: MULTIPLY_SCORE
+        condition {
+          statement: ALWAYS_TRUE
+        }
+        score_multiplier: 0.9
+      }
+      rules {
+        decision: REJECT
+        condition {
+          operation: OR
+          operands {
+            statement: AD_UNIT_WIDTH_SMALLER_THAN
+            int_value: 250
+          }
+          operands {
+            operation: NOT
+            operands {
+              statement: AD_UNIT_WIDTH_SMALLER_THAN
+              int_value: 421
+            }
+          }
+          operands {
+            operation: NOT
+            operands {
+              statement: AD_UNIT_RATIO_SMALLER_THAN
+              double_value: 3.5
+            }
+          }
+          operands {
+            operation: NOT
+            operands {
+              statement: LAYOUT_RENDERING_ID_IS
+              int_value: 0
+            }
+          }
+        }
+      }
+      accept_layout_mode: VERTICAL_MODE
+      accept_layout_mode: HORIZONTAL_MODE
+      accept_layout_mode: SLIDE_VERTICAL_MODE
+      asa_scoring_options {
+        no_button_score_multiplier: 0.9
+      }
+      layout_options {
+        palette {
+          title_color {
+            default_color {
+              source: ADSLOT_CONFIG_LINK
+            }
+            fallback_colors {
+              hardcoded_color: "#212121"
+            }
+          }
+          url_color {
+            default_color {
+              source: ADSLOT_CONFIG_TEXT
+              modifications {
+                darken_color {
+                  factor: 0.4
+                }
+              }
+            }
+            fallback_colors {
+              hardcoded_color: "#424242"
+            }
+          }
+          body_color {
+            default_color {
+              source: ADSLOT_CONFIG_TEXT
+            }
+            fallback_colors {
+              hardcoded_color: "#757575"
+            }
+          }
+          button_color {
+            default_color {
+              hardcoded_color: "#4E92DF"
+            }
+          }
+          border_color {
+            default_color {
+              hardcoded_color: "#E9E9E9"
+            }
+          }
+          extra_color1 {
+            default_color {
+              hardcoded_color: "#FFF"
+            }
+          }
+        }
+        support_flexible_height: false
+      }
+      computed_message {
+        palette {
+          title_color: "#212121"
+          url_color: "#474747"
+          body_color: "#777777"
+          button_color: "#4e92df"
+          background_color: "#ffffff"
+          border_color: "#e9e9e9"
+          extra_color1: "#ffffff"
+          extra_color2: ""
+          palette_source_color {
+            key: 0
+            value: ""
+          }
+          palette_source_color {
+            key: 1
+            value: "#212121"
+          }
+          palette_source_color {
+            key: 2
+            value: "#777777"
+          }
+          palette_source_color {
+            key: 3
+            value: "#777777"
+          }
+          palette_source_color {
+            key: 4
+            value: "#ffffff"
+          }
+          palette_source_color {
+            key: 5
+            value: "#ffffff"
+          }
+          palette_source_color {
+            key: 6
+            value: ""
+          }
+          palette_source_color {
+            key: 7
+            value: ""
+          }
+          palette_source_color {
+            key: 8
+            value: ""
+          }
+          palette_source_color {
+            key: 9
+            value: ""
+          }
+          palette_source_color {
+            key: 10
+            value: ""
+          }
+          palette_source_color {
+            key: 11
+            value: ""
+          }
+          palette_source_color {
+            key: 12
+            value: ""
+          }
+          palette_source_color {
+            key: 13
+            value: ""
+          }
+          palette_source_color {
+            key: 14
+            value: ""
+          }
+          palette_source_color {
+            key: 15
+            value: ""
+          }
+          palette_source_color {
+            key: 16
+            value: ""
+          }
+          palette_source_color {
+            key: 17
+            value: ""
+          }
+          palette_source_color {
+            key: 18
+            value: ""
+          }
+          palette_source_color {
+            key: 19
+            value: ""
+          }
+          palette_source_color {
+            key: 20
+            value: ""
+          }
+          palette_source_color {
+            key: 21
+            value: ""
+          }
+          palette_source_color {
+            key: 22
+            value: ""
+          }
+          palette_source_color {
+            key: 23
+            value: ""
+          }
+          palette_source_color {
+            key: 24
+            value: ""
+          }
+          palette_source_color {
+            key: 25
+            value: ""
+          }
+          palette_source_color {
+            key: 26
+            value: ""
+          }
+          palette_source_color {
+            key: 27
+            value: "FFFFFF"
+          }
+          palette_source_color {
+            key: 28
+            value: "212121"
+          }
+          palette_source_color {
+            key: 29
+            value: "777777"
+          }
+          palette_source_color {
+            key: 30
+            value: "777777"
+          }
+          palette_source_color {
+            key: 31
+            value: ""
+          }
+          palette_source_color {
+            key: 32
+            value: "#1C1D1A"
+          }
+          palette_source_color {
+            key: 33
+            value: "#1C1D1A"
+          }
+          palette_source_color {
+            key: 34
+            value: ""
+          }
+        }
+      }
+      modifier_overrides {
+        density_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        rounded_corners_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        merge_layout_options_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        icon_style_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        text_alignment_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        auto_css_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        button_alignment_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        button_border_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        url_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        border_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        background_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        icon_size_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        button_text_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        animation_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        is_disabled: true
+        font_size_modifier {
+        }
+      }
+      modifier_overrides {
+        is_disabled: true
+        grey_palette_modifier {
+        }
+      }
+    }
+  }
+  rhindle_spec {
+    optimization_time_ms: 130
+    layout_mode: VERTICAL_MODE
+    expand_level: 1
+    slide_ui_spec {
+      slide_ui_computation_successful: false
+    }
+    carousel_ui_spec {
+      left_start_pos_px: 0
+      left_size_px: 0
+      middle_start_pos_px: 0
+      right_start_pos_px: 0
+    }
+    layout_options {
+      palette {
+        title_color {
+          default_color {
+            source: ADSLOT_CONFIG_LINK
+          }
+          fallback_colors {
+            hardcoded_color: "#212121"
+          }
+        }
+        url_color {
+          default_color {
+            source: ADSLOT_CONFIG_TEXT
+            modifications {
+              darken_color {
+                factor: 0.4
+              }
+            }
+          }
+          fallback_colors {
+            hardcoded_color: "#424242"
+          }
+        }
+        body_color {
+          default_color {
+            source: ADSLOT_CONFIG_TEXT
+          }
+          fallback_colors {
+            hardcoded_color: "#757575"
+          }
+        }
+        button_color {
+          default_color {
+            hardcoded_color: "#4E92DF"
+          }
+        }
+        border_color {
+          default_color {
+            hardcoded_color: "#E9E9E9"
+          }
+        }
+        extra_color1 {
+          default_color {
+            hardcoded_color: "#FFF"
+          }
+        }
+      }
+      support_flexible_height: false
+    }
+    rhindle_debug_spec {
+    }
+  }
+  font_spec {
+    font_rendering_spec {
+      font_family: ROBOTO_LIGHT
+      font_weight: LIGHT
+      font_weight_value: 300
+      font_family_css: "\"Roboto\",arial,sans-serif"
+      web_font_names: "Roboto"
+    }
+    computed {
+      final_web_font_link: "Roboto:300,400,500"
+      language: "hr"
+      subtext_web_font_link: ""
+    }
+  }
+  enable_one_point_five_click_controller: false
+  ad_content_language: HR
+  enable_transparent_background: false
+  id: 0
+}
+</pre></div><p></p><p>Rendering Builder ( BuildRenderingResultProducer-0 ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ab&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ab&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_ab&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_ab" class="rendering-builder-buildrenderingresultproducer-0" style="display:none;"><pre>contentads::bow::rendering::text_ads::TextAdsBuilder </pre></div><p></p><p>Rendering Template ( ExpandPageElementProducer-0 ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ac&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ac&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_ac&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_ac" class="rendering-template-expandpageelementproducer-0" style="display:none;"><pre>{{#FILE=versioned_data/dev/templates/elements/text_ad_new/root_post20091024.tpl}}{{#SEC=__{{MAIN}}__}}&lt;!doctype html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+{{#INC=COMMON_HEAD_TAGS}}{{#FILE=versioned_data/dev/templates/elements/common/common_head_tags_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=VIEWPORT_META_TAG}}&lt;meta name="viewport" content="width={{#VAR=VIEWPORT_WIDTH}}300{{/VAR}}, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;
+{{/SEC}}{{#SEC=COMMON_AD_SLOT_METADATA_SECTION}}&lt;script&gt;
+  var google_casm={{#VAR=COMMON_AD_SLOT_METADATA:none}}[]{{/VAR}};
+&lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#SEC=FIRST_IFRAME_ONLY}}      
+{{/SEC}}{{#SEC=WEB_FONTS_SECTION}}    &lt;link href="{{#VAR=SCHEME:none}}https:{{/VAR}}//fonts.googleapis.com/css?family={{#VAR=WEB_FONT_LINK_FAMILY:html_escape}}Roboto:300,400,500{{/VAR}}&amp;lang={{#VAR=WEB_FONT_LINK_LANGUAGE:html_escape}}hr{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+          rel="stylesheet"{{#VAR=BI_SPACE}} {{/VAR}}
+          type="text/css"&gt;
+{{/SEC}}    &lt;style&gt;
+      a.rh-ms-mute-undo {
+        color:{{#VAR=MUTE_COLOR_LINK:cleanse_css}}#212121{{/VAR}};
+      }
+      body,table,div,ul,li{
+        margin:0;
+        padding:0
+      }
+      body{
+        font-family:{{#VAR=FONT_FACE_CSS:none}}"Roboto",arial,sans-serif{{/VAR}};
+      }
+{{#INC=RHINDLE_CSS}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_css_post.tpl}}{{#SEC=__{{MAIN}}__}}#adunit {
+{{#SEC=BACKGROUND_COLOR_HEX_SECTION}}    background-color: {{#VAR=COLOR_BG:cleanse_css}}#ffffff{{/VAR}};
+{{/SEC}}  height: {{#VAR=AD_UNIT_USABLE_HEIGHT:cleanse_css}}250{{/VAR}}px;
+  width: {{#VAR=AD_UNIT_USABLE_WIDTH:cleanse_css}}300{{/VAR}}px;
+}
+#ads {
+  height: {{#VAR=ADS_OVERFLOW_HEIGHT:cleanse_css}}250{{/VAR}}px;
+  {{#VAR=LEADING_EDGE:cleanse_css}}left{{/VAR}}: {{#VAR=LEADING_EDGE_OFFSET:cleanse_css}}0{{/VAR}}px;
+  position: {{#VAR=ADS_POSITION:cleanse_css}}absolute{{/VAR}};
+  top: {{#VAR=ADS_TOP_OFFSET:cleanse_css}}0{{/VAR}}px;
+  width: {{#VAR=ADS_OVERFLOW_WIDTH:cleanse_css}}300{{/VAR}}px;
+}
+#ads ul{
+  list-style: none;
+}
+#ads ul li {
+  {{#SEC=IS_VERTICAL_FORMAT}}clear: both;{{/SEC}}
+  float: {{#VAR=LEADING_EDGE:cleanse_css}}left{{/VAR}};
+  line-height: 0;
+  overflow: hidden;
+  position: relative;  
+}
+#ads table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.rhsvgpngicon {
+  vertical-align:middle;
+}
+.rh-gradient {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+{{#INC=AD_SLOT_CHROME_CSS}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_ad_slot_chrome_css_post.tpl}}{{#SEC=__{{MAIN}}__}}.ads_chrome_top {
+  position: absolute;
+  overflow: hidden;
+  top: {{#VAR=BORDER_THICKNESS:cleanse_css}}0{{/VAR}}px;
+  width: {{#VAR=AD_CHROME_TOP_WIDTH:cleanse_css}}300{{/VAR}}px;
+  height:{{#VAR=AD_CHROME_TOP_HEIGHT:cleanse_css}}0{{/VAR}}px;
+}
+.ads_chrome_bottom {
+  position: absolute;
+  overflow: hidden;
+  bottom: {{#VAR=BORDER_THICKNESS:cleanse_css}}0{{/VAR}}px;
+  width: {{#VAR=AD_CHROME_BOTTOM_WIDTH:cleanse_css}}300{{/VAR}}px;
+  height:{{#VAR=AD_CHROME_BOTTOM_HEIGHT:cleanse_css}}0{{/VAR}}px;
+}
+.ads_chrome_left {
+  position: absolute;
+  overflow: hidden;
+  {{#VAR=LEADING_EDGE:cleanse_css}}left{{/VAR}}: {{#VAR=BORDER_THICKNESS:cleanse_css}}0{{/VAR}}px;
+  width:{{#VAR=AD_CHROME_LEFT_WIDTH:cleanse_css}}0{{/VAR}}px;
+  height: {{#VAR=AD_CHROME_LEFT_HEIGHT:cleanse_css}}250{{/VAR}}px;
+}
+.ads_chrome_right {
+  position: absolute;
+  overflow: hidden;
+  {{#VAR=TRAILING_EDGE:cleanse_css}}right{{/VAR}}: {{#VAR=BORDER_THICKNESS:cleanse_css}}0{{/VAR}}px;
+  width:{{#VAR=AD_CHROME_RIGHT_WIDTH:cleanse_css}}0{{/VAR}}px;
+  height: {{#VAR=AD_CHROME_RIGHT_HEIGHT:cleanse_css}}250{{/VAR}}px;
+}
+{{/SEC}}{{/FILE}}{{/INC}}{{#INC=URL_CSS}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/url_css_post.tpl}}{{#SEC=__{{MAIN}}__}}.rhurlctr {
+  overflow: hidden;
+}
+.rhurlctr_nowrap {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rhurlctr_clickable {
+  cursor: {{#VAR=CURSOR_STYLE:cleanse_css}}pointer{{/VAR}};
+}
+{{#SEC=FAVICONS_SECTION}}.rhfavicon {
+  padding-right: 5px;
+  vertical-align: middle;
+  line-height: 1;
+}
+.rhfavicon img {
+  border: 0;
+}
+{{/SEC}}.rhurl {
+  text-decoration: none;
+}
+.rhurl:hover {
+  text-decoration: underline;
+}
+.rhurl:hover.rhdefaultcolored,
+.rhurlctr.rhdefaultcolored,
+.rhurl.rhdefaultcolored span,
+.rhurl.rhdefaultcolored span:hover {
+  color: {{#VAR=URL_COLOR:cleanse_css}}#777777{{/VAR}};
+}
+{{/SEC}}{{/FILE}}{{/INC}}{{#INC=IMAGE_CSS}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/common_image_css_post.tpl}}{{#SEC=__{{MAIN}}__}}.rhimage, .rhimage_nolink {
+  display: inline-block;
+}
+.rhimage img {
+  cursor: pointer;
+}
+.rhimage_nolink img, .rhimage_nolink img:hover {
+  border: none;
+}
+.rhimage-container {
+  position: relative;
+  display: inline-block;
+}
+.rhimage-container:hover .rhoverlay-text,
+.rhimage-container.expanded .rhoverlay-text {
+  opacity: 1.0;
+}
+.rhoverlay-text {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  color: #999;
+  opacity: 0.0;
+  padding: 3px;
+  font-family: arial, sans-serif;
+  background: linear-gradient(rgba(255, 255, 255, 1.0), rgba(255, 255, 255, 0.0));
+  height: 20px;
+  line-height: 1em;
+  font-size: 12px;
+}
+{{#SEC=ONE_IMAGE_CSS_SECTION}}{{#INC=ONE_IMAGE_CSS}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/one_image_css_post.tpl}}{{#SEC=__{{MAIN}}__}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=BUTTON_CSS}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/common_button_css_post.tpl}}{{#SEC=__{{MAIN}}__}}.rhbutton-container {
+  position: relative;
+{{#SEC=ONE_POINT_FIVE_CLICK_EXPANDED_CONTAINER_SECTION}}  visibility: hidden;
+{{/SEC}}}
+.rhbutton {
+  cursor: pointer;
+  display: inline-block;
+  margin: 0;
+  text-align: center;
+{{#SEC=ONE_POINT_FIVE_CLICK_EXPANDED_CONTAINER_SECTION}}  visibility: visible;
+{{/SEC}}  white-space: nowrap;
+}
+{{#SEC=MESSAGE_SECTION}}.rhbutton .message {
+  color: white;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.rhbutton .message span {
+  margin-{{#VAR=LEADING_EDGE:cleanse_css}}left{{/VAR}}: 0.3em;
+  margin-{{#VAR=TRAILING_EDGE:cleanse_css}}right{{/VAR}}: 0.3em;
+}
+{{/SEC}}{{#SEC=BACKGROUND_HOVER}}.onhoverbg {
+  background: {{#VAR=BACKGROUND_HOVER_COLOR:cleanse_css}}#f8f8f8{{/VAR}};
+}
+{{/SEC}}.rhbutton .icon-container {
+  display: inline-block;
+  vertical-align: middle;
+}
+.rhbutton .icon, .rhbutton .rhsvgpngicon {
+  border-width: 0;
+}
+{{#SEC=ONE_BUTTON_CSS_SECTION}}{{#INC=ONE_BUTTON_CSS}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/one_button_css_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=SELECTOR:cleanse_css}}.taw0 .rh1141{{/VAR}} .rhbutton-container {
+  text-align: {{#VAR=CONTAINER_TEXT_ALIGN:cleanse_css}}right{{/VAR}};
+{{#SEC=ONE_POINT_FIVE_CLICK_EXPANDED_CONTAINER_SECTION}}    width: {{#VAR=MAX_EXPANDED_CONTAINER_SIZE_PX:cleanse_css}}258{{/VAR}}px;
+    {{#VAR=LEADING_EDGE:cleanse_css}}left{{/VAR}}: {{#VAR=CONTAINER_PX_LEADING_EDGE:cleanse_css}}-148{{/VAR}}px;
+{{/SEC}}}
+{{#VAR=SELECTOR:cleanse_css}}.taw0 .rh1141{{/VAR}} .rhbutton {
+  background: {{#VAR=BUTTON_COLOR:cleanse_css}}#212121{{/VAR}};
+  -webkit-border-radius: {{#VAR=BUTTON_BORDER_RADIUS_PX:cleanse_css}}0{{/VAR}}px;
+  border-radius: {{#VAR=BUTTON_BORDER_RADIUS_PX:cleanse_css}}0{{/VAR}}px;
+  border-width: {{#VAR=BUTTON_BORDER_WIDTH_PX:cleanse_css}}0{{/VAR}}px;
+  height: {{#VAR=BUTTON_HEIGHT_PX:cleanse_css}}18{{/VAR}}px;
+  min-width: {{#VAR=BUTTON_WIDTH_PX:cleanse_css}}110{{/VAR}}px;
+  max-width: {{#VAR=MAX_EXPANDED_CONTAINER_SIZE_PX:cleanse_css}}258{{/VAR}}px;
+}
+{{#VAR=SELECTOR:cleanse_css}}.taw0 .rh1141{{/VAR}} .rhbutton:hover {
+  background: {{#VAR=HOVER_BUTTON_COLOR:cleanse_css}}#454545{{/VAR}};
+}
+{{#VAR=SELECTOR:cleanse_css}}.taw0 .rh1141{{/VAR}} .icon-container {
+  height: {{#VAR=BUTTON_HEIGHT_PX:cleanse_css}}18{{/VAR}}px;
+  line-height: {{#VAR=BUTTON_HEIGHT_PX:cleanse_css}}18{{/VAR}}px;
+  width: {{#VAR=BUTTON_ICON_CONTAINER_WIDTH_PX:cleanse_css}}13{{/VAR}}px;
+}
+{{#VAR=SELECTOR:cleanse_css}}.taw0 .rh1141{{/VAR}} .icon, {{#VAR=SELECTOR:cleanse_css}}.taw0 .rh1141{{/VAR}} .icon-container .rhsvgpngicon {
+  height: {{#VAR=BUTTON_ICON_HEIGHT_PX:cleanse_css}}13{{/VAR}}px;
+  margin-{{#VAR=LEADING_EDGE:cleanse_css}}left{{/VAR}}: {{#VAR=LEADING_ICON_PADDING:cleanse_css}}1{{/VAR}}px;
+  vertical-align: top;
+  margin-top: {{#VAR=BUTTON_ICON_MARGIN_TOP_PX:cleanse_css}}2{{/VAR}}px;
+}
+{{#SEC=ONE_POINT_FIVE_CLICK_SECTION}}{{#VAR=SELECTOR:cleanse_css}}.taw0 .rh1141{{/VAR}} .message {
+  line-height: {{#VAR=BUTTON_HEIGHT_PX:cleanse_css}}18{{/VAR}}px;
+  font-size: {{#VAR=MESSAGE_FONT_SIZE_PX:cleanse_css}}14{{/VAR}}px;
+  max-width: 0;
+}
+{{#VAR=SELECTOR:cleanse_css}}.taw0 .rh1141{{/VAR}} .one-point-five-click .message {
+  color: {{#VAR=BUTTON_ICON_COLOR:cleanse_css}}#212121{{/VAR}};
+  max-width: {{#VAR=MAX_EXPANDED_MESSAGE_SIZE_PX:cleanse_css}}245{{/VAR}}px;
+}
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=RHINDLE_COMPUTED_CSS}}{{#FILE=versioned_data/dev/templates/elements/utils/string_post20091025.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=STRING}}#ads .rh11211 a{color:#212121} #ads .rh11211 span{color:#212121} #ads .rh1140{text-overflow:ellipsis} #ads .rh1140 .rhurl{color:#474747} #ads .rh1140 .rhurl span{display:inline} #ads .rh1141 .rhbutton{background-color:#ffffff;font-weight:500} .rh{background-color:#ffffff;display:inline-block;font-size:0;height:250px;line-height:0;overflow:hidden;padding:0;width:300px} .rh &gt; table{width:100%} .rh0{background-color:#e9e9e9;display:inline-block;height:1px;overflow:hidden;padding:0;width:300px} .rh0c{height:1px;padding:0;width:300px} .rh1{display:inline-block;font-size:0;height:248px;line-height:0;overflow:hidden;padding:0} .rh1 &gt; table{height:100%} .rh10{background-color:#e9e9e9;display:inline-block;height:248px;overflow:hidden;padding:0;width:1px} .rh10c{height:248px;padding:0;width:1px} .rh11{display:inline-block;font-size:0;line-height:0;overflow:hidden;padding:0;width:298px} .rh11 &gt; table{width:100%} .rh110{display:inline-block;overflow:hidden;padding:0} .rh110c{padding:0} .rh112{display:inline-block;font-size:0;height:45px;line-height:0;padding:12px 12px 0 15px;width:271px} .rh112 &gt; table{height:100%} .rh1120{display:inline-block;height:45px;overflow:hidden;padding:0 12px 0 0;width:45px} .rh1120c{height:45px;padding:0;width:57px} .rh1121{display:inline-block;font-size:0;height:45px;line-height:0;padding:0;width:214px} .rh1121 &gt; table{width:100%} .rh11210{display:inline-block;height:4px;overflow:hidden;padding:0;width:214px} .rh11210c{height:4px;padding:0;width:214px} .rh11211{color:#212121;display:inline-block;font-family:"Roboto",arial,sans-serif;font-size:14px;font-weight:500;height:37px;line-height:18px;padding:0;white-space:nowrap;width:214px} .rh11211c{height:37px;padding:0;text-align:left;vertical-align:middle;width:214px} .rh11212{display:inline-block;height:4px;overflow:hidden;padding:0;width:214px} .rh11212c{height:4px;padding:0;width:214px} .rh1121c{height:45px;padding:0;width:214px} .rh112c{height:57px;padding:0;vertical-align:middle;width:298px} .rh113{display:inline-block;height:3px;overflow:hidden;padding:0;width:298px} .rh113c{height:3px;padding:0;width:298px} .rh114{display:inline-block;font-size:0;height:20px;line-height:0;padding:3px 12px 5px 15px;width:271px} .rh114 &gt; table{height:100%} .rh1140{color:#474747;display:inline-block;font-family:"Roboto",arial,sans-serif;font-size:12px;font-weight:400;line-height:14px;padding:3px 9px 0 0;white-space:nowrap;width:152px} .rh1140c{padding:0;text-align:left;vertical-align:middle;width:161px} .rh1141{display:inline-block;font-size:14px;height:18px;line-height:17px;padding:0;width:110px} .rh1141c{height:20px;padding:0;text-align:right;vertical-align:middle} .rh114c{height:28px;padding:0;vertical-align:middle;width:298px} .rh115{display:inline-block;height:3px;overflow:hidden;padding:0;width:298px} .rh115c{height:3px;padding:0;width:298px} .rh11c{padding:0;width:298px} .rh12{background-color:#e9e9e9;display:inline-block;height:248px;overflow:hidden;padding:0;width:1px} .rh12c{height:248px;padding:0;width:1px} .rh1c{height:248px;padding:0} .rh2{background-color:#e9e9e9;display:inline-block;height:1px;overflow:hidden;padding:0;width:300px} .rh2c{height:1px;padding:0;width:300px} .taw{height:250px;width:300px}  .rhimage img{border:none} .rhlongtitle{text-decoration:none}{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=CSS_COLLECTOR}}{{#FILE=versioned_data/dev/templates/elements/common/css_collector_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CSS_SECTION}}{{#INC=CSS_ELEMENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/image_css_post.tpl}}{{#SEC=__{{MAIN}}__}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{#SEC=CSS_SECTION}}{{#INC=CSS_ELEMENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/logo_css_post.tpl}}{{#SEC=__{{MAIN}}__}}.rhlogo {
+  display: inline-block;
+}
+{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}    &lt;/style&gt;
+    &lt;script&gt;
+{{#INC=JS_UTILS}}{{#FILE=versioned_data/dev/templates/elements/js_utils/js_utils_post20090930.tpl}}{{#SEC=__{{MAIN}}__}}{{#INC=JS_ERROR_REPORTING}}{{#FILE=versioned_data/dev/templates/elements/js_utils/js_error_reporting_post.tpl}}{{#SEC=__{{MAIN}}__}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=VIEW_URL_JAVA_SCRIPT}}{{#FILE=versioned_data/dev/templates/elements/js_utils/view_url_js_post.tpl}}{{#SEC=__{{MAIN}}__}}
+var viewReq = new Array();
+function vu(u) {
+  var i=new Image();
+  i.src=u.replace("&amp;amp;","&amp;");
+  viewReq.push(i);
+}
+{{/SEC}}{{/FILE}}{{/INC}}{{#SEC=SPAM_SIGNALS_BUNDLE_SECTION}}{{#INC=SPAM_SIGNALS_BUNDLE_JAVA_SCRIPT}}{{#FILE=versioned_data/dev/templates/js/elements/html/spam_signals/spam_signals_bundle_js.tpl}}{{#SEC=__{{MAIN}}__}}(function(){var g=this,h=function(a,b,c){return a.call.apply(a.bind,arguments)},k=function(a,b,c){if(!a)throw Error();if(2&lt;arguments.length){var d=Array.prototype.slice.call(arguments,2);return function(){var c=Array.prototype.slice.call(arguments);Array.prototype.unshift.apply(c,d);return a.apply(b,c)}}return function(){return a.apply(b,arguments)}},l=function(a,b,c){Function.prototype.bind&amp;&amp;-1!=Function.prototype.bind.toString().indexOf("native code")?l=h:l=k;return l.apply(null,arguments)},m=function(a,b){a=a.split(".");var c=g;a[0]in c||"undefined"==typeof c.execScript||c.execScript("var "+a[0]);for(var d;a.length&amp;&amp;(d=a.shift());)a.length||void 0===b?c[d]&amp;&amp;c[d]!==Object.prototype[d]?c=c[d]:c=c[d]={}:c[d]=b};var n=Array.prototype.indexOf?function(a,b){return Array.prototype.indexOf.call(a,b,void 0)}:function(a,b){if("string"==typeof a)return"string"==typeof b&amp;&amp;1==b.length?a.indexOf(b,0):-1;for(var c=0;c&lt;a.length;c++)if(c in a&amp;&amp;a[c]===b)return c;return-1};var p=document;var q=function(a,b){if(!a||!b)return!1;if(a.contains&amp;&amp;1==b.nodeType)return a==b||a.contains(b);if("undefined"!=typeof a.compareDocumentPosition)return a==b||!!(a.compareDocumentPosition(b)&amp;16);for(;b&amp;&amp;a!=b;)b=b.parentNode;return b==a};var t={capture:!0},u=function(a){var b=!1,c;return function(){b||(c=a(),b=!0);return c}}(function(){var a=!1;try{var b=Object.defineProperty({},"passive",{get:function(){a=!0}});g.addEventListener("test",null,b)}catch(c){}return a});function v(a){return a?a.passive&amp;&amp;u()?a:a.capture||!1:!1}var w=function(a,b,c,d){a.addEventListener&amp;&amp;a.addEventListener(b,c,v(d))};var x=function(a,b,c,d,f){window.css?window.css(b,c,d,f,void 0):a&amp;&amp;(b=a.href,f?d=b+("&amp;"+c+"="+d):(f="&amp;"+c+"=",c=b.indexOf(f),0&gt;c?d=b+f+d:(c+=f.length,f=b.indexOf("&amp;",c),d=0&lt;=f?b.substring(0,c)+d+b.substring(f):b.substring(0,c)+d)),a.href=2E3&lt;d.length?b:d)};var y=!1,z=!1,A=null,B=function(){document.addEventListener&amp;&amp;w(document,"click",function(a){A=a},t)},C=function(){var a=A?A:window.event;return a?y||z?!1:(a.preventDefault?a.preventDefault():a.returnValue=!1,!0):!1},D=function(){w(document,"mousedown",function(){y=!0});w(document,"keydown",function(){z=!0});B()};var F=function(a,b){b=void 0===b?17:b;if(0&gt;b||parseInt(b,10)!==b)b=17;E(a,b)},G=function(a,b){E(a,b||1)},H=function(a){E(a,2)},I=function(a,b){E(a,b||0)},J={},K=!0,E=function(a,b){var c;if(c=K)void 0!==J[a]||(J[a]=[]),(c=J[a][b])||(J[a][b]=!0);c||x(document.getElementById(a),a,"nb",b,K)};var L=function(){this.a=this.b=null;p.addEventListener&amp;&amp;p.addEventListener("mousedown",l(this.c,this),!0);w(p,"DOMContentLoaded",l(function(){this.a=p.getElementById("common_15click_anchor")},this))};L.prototype.c=function(a){this.b=a};var M=function(a,b,c){var d=a.id||"";x(a,d,"nx",b);x(a,d,"ny",c)};var N=[0,2,1],O=null,P=function(a){if(a){var b;if(b=window.event||O){var c;(c=b.which?1&lt;&lt;N[b.which-1]:b.button)&amp;&amp;b.shiftKey&amp;&amp;(c|=8);c&amp;&amp;b.altKey&amp;&amp;(c|=16);c&amp;&amp;b.ctrlKey&amp;&amp;(c|=32);b=c}else b=null;b&amp;&amp;x(a,a.id,"mb",b)}};document.addEventListener&amp;&amp;document.addEventListener("mousedown",function(a){O=a},!0);window.mb=P;var Q={},R=function(a){void 0!==Q[a]?Q[a]++:Q[a]=1;x(document.getElementById(a),a,"nm",Q[a])};m("init_ssb",function(a,b,c,d,f,S){a&amp;&amp;(D(),m("accbk",C));b&amp;&amp;(S&amp;&amp;(K=!1),m("cla",F),m("cll",G),m("clb",H),m("clh",I));if(c){var r=new L;m("xy",function(a,b,c){c=c||b;var d=a||r.b;if(d&amp;&amp;b&amp;&amp;c&amp;&amp;!q(r.a,d.target)){a=p.querySelector("a.one-point-five-click.rhbutton");var e;(e=!a)||(a.classList?e=a.classList.contains("preexpanded"):(a.classList?e=a.classList:(e=a.className,e="string"==typeof e&amp;&amp;e.match(/\S+/g)||[]),e=0&lt;=n(e,"preexpanded")));if(e||!q(a,d.target))e=Math.round(d.clientX-c.offsetLeft),c=Math.round(d.clientY-c.offsetTop),M(b,e,c),r.a&amp;&amp;M(r.a,e,c),a&amp;&amp;M(a,e,c)}})}d&amp;&amp;m("mb",P);f&amp;&amp;m("ss",R)});}).call(this);
+{{/SEC}}{{/FILE}}{{/INC}}  init_ssb(
+    {{#VAR=ENABLE_BUNDLED_ACCIDENTAL_MOUSEUP}}false{{/VAR}},
+    {{#VAR=ENABLE_BUNDLED_CLICK_LOCATION}}true{{/VAR}},
+    {{#VAR=ENABLE_BUNDLED_CLICK_XY_15CLICK}}false{{/VAR}},
+    {{#VAR=ENABLE_BUNDLED_MOUSE_BUTTON}}false{{/VAR}},
+    {{#VAR=ENABLE_BUNDLED_NUM_MOUSEOVERS}}false{{/VAR}},
+    {{#VAR=FORCE_UNIQUE_CLICK_LOCATION}}false{{/VAR}}
+  );
+{{/SEC}}
+if (typeof(ss) === "undefined") { ss = function(){}; }
+function st(id) {
+  var a = document.getElementById(id);
+  if (a) {
+  }
+  
+}
+function ha(a,x){ {{#VAR=BI_SPACE}} {{/VAR}}
+{{#SEC=CLICK_LOCATION_SECTION}}  clh(a,x);
+{{/SEC}}  
+}
+function ia(a,e,x) {
+{{#SEC=CLICK_LOCATION_SECTION}}  cll(a,x);
+{{/SEC}}  
+}
+function ja(a,x) {
+{{#SEC=CLICK_LOCATION_SECTION}}  cla(a,x);
+{{/SEC}}  
+}
+function ga(o,e,x) {
+  if (document.getElementById) {
+    var a=o.id.substring(1),p="",r="",g=e.target,t,f,h;
+    if (g) {
+      t=g.id;
+      f=g.parentNode;
+      if (f) {
+        p=f.id;
+        h=f.parentNode;
+        if (h)
+          r=h.id;
+      }
+    } else {
+      h=e.srcElement;
+      f=h.parentNode;
+      if (f)
+        p=f.id;
+      t=h.id;
+    }
+    if (t==a||p==a||r==a)
+      return true;
+    ia(a,e,x);
+    {{#VAR=JAVASCRIPT_TARGET}}top.location.href=document.getElementById(a).href{{/VAR}};
+  }
+}
+{{/SEC}}{{/FILE}}{{/INC}}{{#SEC=FIRST_IFRAME_ONLY}}        
+{{/SEC}}    &lt;/script&gt;
+{{#SEC=FIRST_IFRAME_ONLY}}{{/SEC}}{{#INC=JS_CONTROLLER_LIB}}{{#FILE=versioned_data/dev/templates/elements/client/controller_lib_post20130208.tpl}}{{#SEC=__{{MAIN}}__}}
+{{#SEC=HYDRA_INTEGRATION_SECTION}}{{#INC=HYDRA_MAIN_JS}}{{#FILE=versioned_data/dev/templates/elements/client/hydra_component_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=EXTERNAL_JS_SECTION}}  &lt;script src="{{#VAR=CAFE_STATIC_HOST}}https://tpc.googlesyndication.com{{/VAR}}/pagead/js/{{#VAR=GDP_VERSION_ID:url_query_escape}}r20180912{{/VAR}}/{{#VAR=CACHE_BUSTER_FOR_VERSIONED_FILES:url_query_escape}}r20110914{{/VAR}}/client/ext/m_{{#VAR=COMPONENT_NAME}}js_controller{{/VAR}}{{#VAR=COMPONENT_SUFFIX}}{{/VAR}}.js"
+          
+          &gt;&lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}  &lt;script&gt;
+    buildAdSlot({{#VAR=AD_SLOT_DATA:none}}[[[null,null,300,242,"https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome","https://googleads.g.doubleclick.net/pagead/conversion/?ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ\u0026sigh=wfXtzvnu0WM","217545863730","https://www.googleadservices.com/pagead/aclk?sa=L\u0026ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ\u0026num=1\u0026cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q\u0026sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ\u0026client=ca-pub-0303007929921430\u0026adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome",null,null,null,null,null,null,"https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome",null,null,"hr",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,20]],300,250,1,null,null,"CLvonMyatd0CFYm_dwodRaYLvA","xeOYW4WKKZCU3wPUwZuICQ",[null,null,null,null,null,1,[]],"ca-pub-0303007929921430",null,null,null,"_top",null,null,null,"https://tpc.googlesyndication.com",["#777777","#212121","#777777","#ffffff","#f8f8f8"],null,null,-1280017795,[["open_applinks_adding_gclid","True"],["pass_gclid_to_deeplink_url","True"],["enable_deeplink_for_all_ios_bow","False"]],null,null,null,null,[],null,[],null,null,[],1,null,null,null,null,"https://www.gstatic.com"]{{/VAR}});
+  &lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=JS_COMMON_AD_COMPONENTS}}{{#FILE=versioned_data/dev/templates/elements/client/common_ad_components_post20140908.tpl}}{{#SEC=__{{MAIN}}__}}
+{{#SEC=INTENTFUL_CLICK_REACTOR_SECTION}}{{#INC=INTENTFUL_CLICK_REACTOR_JS}}{{#FILE=versioned_data/dev/templates/elements/client/hydra_component_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=INLINE_JS_SECTION}}  &lt;script&gt;
+{{#INC=INLINE_JS_TEMPLATE}}{{#FILE=versioned_data/dev/templates/js/client/m_intentful_click_reactor_js.tpl}}{{#SEC=__{{MAIN}}__}}(function(_){var Li=function(a){_.E(this,a,null)};_.B(Li,_.D);var Mi=function(a){this.b=a;this.c=this.b.getAd(0);1&lt;this.b.getAdsLength()&amp;&amp;this.b.forEachAd((0,_.y)(this.l,this));_.q.googqscp.registerCallback(_.sc(423,this.g,this))};Mi.prototype.l=function(a){var b=this;a.listen(0,_.n(this.b.b,4,!1)?"touchstart":"mousedown",function(){b.c=a})};Mi.prototype.g=function(a,b){b=new Li(b);switch(_.n(b,4,1)){case 2:_.n(b,2,0)?Ni(this,"blocked_fast_click"):(_.n(b,1,"")||_.n(b,7,""))&amp;&amp;Ni(this,"blocked_border_click");break;case 3:this.b.fireOnObject("common_show_15overlay",a);Ni(this,"onepointfiveclick_first_click");break;case 4:this.b.fireOnObject("should_expand_action_button",a)}};var Ni=function(a,b){(a=_.n(a.c.b,6,""))&amp;&amp;_.Jb(_.G,a+"&amp;label="+b,void 0)};_.x("init_icr",function(a){_.J(_.F,"DOMContentLoaded",function(){!_.q.googqscp||1&gt;a.getAdsLength()||a.registerFinalizeCallback(function(){new Mi(a)})})},void 0);})(window.hydra=window.hydra||{});
+{{/SEC}}{{/FILE}}{{/INC}}  &lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}  &lt;script&gt;init_icr(adSlot);&lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=JS_TEXT_AD_COMPONENTS}}{{#FILE=versioned_data/dev/templates/elements/client/text_ad_components_post20140618.tpl}}{{#SEC=__{{MAIN}}__}}
+{{#INC=SPAM_INTEGRATION_JS}}{{#FILE=versioned_data/dev/templates/elements/client/hydra_component_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=INLINE_JS_SECTION}}  &lt;script&gt;
+{{#INC=INLINE_JS_TEMPLATE}}{{#FILE=versioned_data/dev/templates/js/client/m_spam_integration_js.tpl}}{{#SEC=__{{MAIN}}__}}(function(_){var cj=function(){this.b=[];this.c={}},dj=function(a){var b=[a.key,a.value];_.u(a.sa)&amp;&amp;b.push(a.sa);return b};cj.prototype.report=function(){for(var a=[],b=0;b&lt;this.b.length;++b)a.push(dj(this.b[b]));return a};var ej={};var fj={1:0,45:0,46:0,48:0,2:1,4:8,5:6,8:11,9:2,6:9,34:25,26:15,3:7,20:12,24:26,33:11,25:0,40:9,36:19,38:8,37:1},gj=function(a,b,c,d){var e=fj[b];4==b&amp;&amp;(b=(d=d.currentTarget)?d.getAttribute("data-absm"):_.Zc(c,b,"data-absm"),"e"==b?e=12:"db"==b?e=29:"dd"==b&amp;&amp;(e=30));(0,window.ja)(a,e)},hj=function(a){return function(){a()}},ij=function(a){return a.report()};_.x("registerAd",function(a,b){_.u(ej[b])||(ej[b]=new cj);a.g.o.push(_.z(ij,ej[b]));for(var c=[1,45,46,48,2,4,8,6,9,5,3,20,34,26,24,33,25,40,36,38,37],d=0;d&lt;c.length;d++)_.Ba(window.st)&amp;&amp;a.listen(c[d],"mousedown",hj(_.z(window.st,b))),a.listen(c[d],"click",_.z(gj,b));a.listen(15,"click",_.z(gj,b));_.Ba(window.st)&amp;&amp;a.listen(15,"mousedown",hj(_.z(window.st,b)));_.Ba(window.ss)&amp;&amp;(a.listen(0,"mouseover",hj(_.z(window.ss,b))),a.listen(0,"focus",hj(_.z(window.ss,b))),a.listen(1,"focus",hj(_.z(window.ss,b))),a.listen(1,"mouseover",hj(_.z(window.ss,b))));return a},void 0);_.x("css",function(a,b,c,d,e){a=ej[a];_.u(a)&amp;&amp;(!_.u(a.c[b])||d?(d=a.b.length,a.c[b]=d,a.b[d]={key:b,value:c,sa:e}):(b=a.b[a.c[b]],b.value=c,b.sa=e))},void 0);})(window.hydra=window.hydra||{});
+{{/SEC}}{{/FILE}}{{/INC}}  &lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{/FILE}}{{/INC}}  &lt;/head&gt;
+  &lt;body{{#SEC=FIRST_IFRAME_ONLY}}{{/SEC}}&gt;
+{{#SEC=FIRST_IFRAME_ONLY}}      
+{{/SEC}}{{#INC=AD_UNIT_BACKGROUND}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_ad_unit_wrapper_post.tpl}}{{#SEC=__{{MAIN}}__}}&lt;div id=adunit data-rh-set-type="{{#VAR=RHINDLE_LAYOUT_SET_TYPE:html_escape}}49{{/VAR}}"&gt;
+  &lt;div id=ads {{#VAR=MAYBE_RTL}}{{/VAR}}
+  &gt;
+    &lt;ul&gt;
+{{#SEC=ONE_AD_SECTION}}{{#INC=ONE_TEXT_AD}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_ad_wrapper_post.tpl}}{{#SEC=__{{MAIN}}__}}&lt;li id=taw{{#VAR=POS:html_escape_with_arg=attribute}}0{{/VAR}}
+  {{#VAR=BI_SPACE}} {{/VAR}}class="{{#VAR=CLASS_NAMES:html_escape}}taw taw0{{/VAR}}"  
+  {{#VAR=BI_SPACE}} {{/VAR}}lang="{{#VAR=CREATIVE_LANGUAGE:html_escape}}hr{{/VAR}}"
+{{#SEC=MULTISLOT_ATTRIBUTES}}  {{#VAR=BI_SPACE}} {{/VAR}}data-dim="{{#VAR=PARTIAL_SLOT_WIDTH:html_escape}}300{{/VAR}}x{{#VAR=PARTIAL_SLOT_HEIGHT:html_escape}}242{{/VAR}}"
+  {{#VAR=BI_SPACE}} {{/VAR}}data-slide="{{#VAR=IS_SLIDE_UI:html_escape}}false{{/VAR}}"
+{{/SEC}}  &gt;
+{{#INC=RHINDLE_AD}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_vertical_flow_post.tpl}}{{#SEC=__{{MAIN}}__}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh{{/VAR}}"
+&gt;
+  &lt;table&gt;
+{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh0c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-empty rh0{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/empty_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=HTML_SNIPPET:none}}{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_horizontal_flow_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh1c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh1{{/VAR}}"
+     
+&gt;
+  &lt;table&gt;&lt;tr&gt;
+{{#SEC=REPEATED_CHILD_SECTION}}{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh10c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-empty rh10{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/empty_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=HTML_SNIPPET:none}}{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_vertical_flow_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh11c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh11{{/VAR}}"
+&gt;
+  &lt;table&gt;
+{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh110c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-image rh-image rh110{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+{{#SEC=INTENTFUL_CLICK_DATA_SECTION}}       {{#VAR=BI_SPACE}} {{/VAR}}data-ifc="{{#VAR=INTENTFUL_CLICK_DATA:html_escape}}[[[&amp;quot;15,15,10,15&amp;quot;,null,0,2]]]{{/VAR}}"
+     {{/SEC}}&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/image_post.tpl}}{{#SEC=__{{MAIN}}__}}  &lt;a class="rhimage rhimage_{{#VAR=UNIQUE_ID:html_escape}}C0_RH110_{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+{{#SEC=CLICKABLE_IMAGE_SECTION}}       href="{{#VAR=REDIRECT_URL:none}}https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+       data-redirect-ping="{{#VAR=ORIGINAL_REDIRECT_URL:html_escape}}{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+       target={{#VAR=LINK_TARGET:html_escape_with_arg=attribute}}_top{{/VAR}}{{#VAR=BI_SPACE}} {{/VAR}}
+{{/SEC}}     title="{{#VAR=AD_TITLE:html_escape}}Å&nbsp;kolovanje od kuÄe{{/VAR}}"&gt;
+{{#SEC=STANDARD_IMG_SECTION}}      &lt;img style="height:{{#VAR=IMAGE_HEIGHT:cleanse_css}}156{{/VAR}}px;
+                  width:{{#VAR=IMAGE_WIDTH:cleanse_css}}298{{/VAR}}px;"{{#VAR=BI_SPACE}} {{/VAR}}
+           src="{{#VAR=IMAGE_URL:img_src_url_escape_with_arg=html}}https://tpc.googlesyndication.com/daca_images/simgad/16378469889904246730?w=400&amp;amp;h=209{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+           alt=""&gt;
+{{/SEC}}  &lt;/a&gt;
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_horizontal_flow_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh112c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh112{{/VAR}}"
+     
+&gt;
+  &lt;table&gt;&lt;tr&gt;
+{{#SEC=REPEATED_CHILD_SECTION}}{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh1120c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-logo rh1120{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/logo_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CLICKABLE_LOGO_SECTION}}&lt;a class="rhlogo"{{#VAR=BI_SPACE}} {{/VAR}}
+  href="{{#VAR=REDIRECT_URL:none}}https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+  target={{#VAR=LINK_TARGET:html_escape_with_arg=attribute}}_top{{/VAR}}{{#VAR=BI_SPACE}} {{/VAR}}
+  title="{{#VAR=TOOLTIP:html_escape}}biznis-akademija.com{{/VAR}}"&gt;
+{{/SEC}}  &lt;{{#VAR=IMG_TAG:html_escape_with_arg=attribute}}img{{/VAR}}{{#VAR=BI_SPACE}} {{/VAR}}
+    width="{{#VAR=LOGO_WIDTH:html_escape}}45{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+    height="{{#VAR=LOGO_HEIGHT:html_escape}}45{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+    src="{{#VAR=LOGO_URL:html_escape}}https://tpc.googlesyndication.com/daca_images/simgad/14174002585195600746?w=128&amp;amp;h=128{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+    alt=""&gt;
+{{#SEC=CLICKABLE_LOGO_SECTION}}&lt;/a&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_vertical_flow_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh1121c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh1121{{/VAR}}"
+&gt;
+  &lt;table&gt;
+{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh11210c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-empty rh11210{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/empty_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=HTML_SNIPPET:none}}{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh11211c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-long-title rh-title rh11211{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/text_piece_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CLICKABLE_TEXT_SECTION}}  &lt;a class="{{#VAR=CLASS_NAME:html_escape}}rhlongtitle{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+    href="{{#VAR=REDIRECT_URL:none}}https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;nb=0&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+    target={{#VAR=LINK_TARGET:html_escape_with_arg=attribute}}_top{{/VAR}}{{#VAR=BI_SPACE}} {{/VAR}}
+    title="{{#VAR=TOOLTIP:html_escape}}biznis-akademija.com{{/VAR}}"&gt;
+{{/SEC}}    &lt;span
+      &gt;
+      {{#VAR=TAG_LINE:html_escape}}{{/VAR}}
+{{#INC=TAG_LINE_WITH_LINEBREAKS}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/text_with_linebreaks_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=ONE_LINE_SECTION}}  {{#VAR=ONE_LINE:html_escape}}UÄi odakle i kada tebi odgovara. {{/VAR}}{{#SEC=LINEBREAK_SECTION}}&lt;br&gt;{{/SEC}}
+{{/SEC}}{{#SEC=ONE_LINE_SECTION}}  {{#VAR=ONE_LINE:html_escape}}Upis po sniÅ¾enim cijenama u â¦{{/VAR}}
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}    &lt;/span&gt;
+{{#SEC=CLICKABLE_TEXT_SECTION}}  &lt;/a&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh11212c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-empty rh11212{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/empty_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=HTML_SNIPPET:none}}{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}  &lt;/table&gt;
+&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}  &lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh113c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-empty rh113{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/empty_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=HTML_SNIPPET:none}}{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_horizontal_flow_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh114c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh114{{/VAR}}"
+     
+&gt;
+  &lt;table&gt;&lt;tr&gt;
+{{#SEC=REPEATED_CHILD_SECTION}}{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh1140c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-url rh-url rh1140{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/url_post.tpl}}{{#SEC=__{{MAIN}}__}}&lt;div class="rhurlctr{{#VAR=EXTRA_CLASSES_FOR_CONTAINER:html_escape}} rhurlctr_nowrap rhurlctr_clickable{{/VAR}}" dir="ltr"&gt;
+{{#SEC=CLICKABLE_URL_SECTION}}  &lt;a class="rhurl{{#VAR=EXTRA_CLASSES:html_escape}}{{/VAR}}" title="{{#VAR=VISIBLE_URL:html_escape}}BusinessAcademy{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+    href="{{#VAR=REDIRECT_URL:none}}https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+    target="{{#VAR=LINK_TARGET:html_escape}}_top{{/VAR}}"&gt;
+    &lt;span&gt;
+{{/SEC}}      {{#VAR=VISIBLE_URL:html_escape}}BusinessAcademy{{/VAR}}
+{{#SEC=CLICKABLE_URL_SECTION}}    &lt;/span&gt;
+  &lt;/a&gt;
+{{/SEC}}&lt;/div&gt;
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh1141c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-button rh-nessie-button rh1141{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/button_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=NOT_IE9_OR_LESS}}&lt;div class="rhbutton-container"&gt;
+{{/SEC}}  &lt;{{#VAR=BUTTON_CONTENT_TAG:html_escape_with_arg=attribute}}a{{/VAR}}{{#VAR=BI_SPACE}} {{/VAR}}class="rhbutton{{#VAR=EXTRA_CLASSES:html_escape}} one-point-five-click preexpanded{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+{{#SEC=PREVENT_1_5}}       data-p1-5c=true{{#VAR=BI_SPACE}} {{/VAR}}
+{{/SEC}}{{#SEC=HREF_SECTION}}       href="{{#VAR=REDIRECT_URL:none}}https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ&amp;num=1&amp;cid=CAASEuRoDd0At8pHrEhxOEA30bP__Q&amp;sig=AOD64_2RNuqkmK3iu19LE7h593S-0y8nuQ&amp;client=ca-pub-0303007929921430&amp;adurl=https://www.biznis-akademija.com/kako-da-ucite-od-kuce-ili-posla-dobijte-zvanicne-vestine-diplome{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+{{/SEC}}     target="{{#VAR=LINK_TARGET:html_escape}}_top{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+     title="{{#VAR=VISIBLE_URL:html_escape}}biznis-akademija.com{{/VAR}}"&gt;
+{{#SEC=ONE_POINT_FIVE_CLICK_MESSAGE_SECTION}}      &lt;div class="message"&gt;
+        &lt;span&gt;{{#VAR=ONE_POINT_FIVE_CLICK_MESSAGE:html_escape}}Saznajte viÅ¡e{{/VAR}}&lt;/span&gt;
+      &lt;/div&gt;
+{{/SEC}}{{#SEC=ICON_SECTION}}      &lt;div class="icon-container"&gt;
+{{#INC=SVG_PNG_ICON}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/svg_icons/svg_png_icon_nessie_tiamat_post.tpl}}{{#SEC=__{{MAIN}}__}}&lt;svg class="rhsvgpngicon{{#VAR=EXTRA_CLASSES:html_escape}}{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+     preserveAspectRatio="xMinYMin meet"{{#VAR=BI_SPACE}} {{/VAR}}
+     version="1.1"{{#VAR=BI_SPACE}} {{/VAR}}
+     xmlns="https://www.w3.org/2000/svg"{{#VAR=BI_SPACE}} {{/VAR}}
+     xmlns:xlink="https://www.w3.org/1999/xlink"{{#VAR=BI_SPACE}} {{/VAR}}
+     x="0px" y="0px" height="{{#VAR=HEIGHT:html_escape}}13px{{/VAR}}" width="{{#VAR=WIDTH:html_escape}}8px{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+     viewBox="0 0 26 42" enable-background="new 0 0 26 42" xml:space="preserve"&gt;
+  &lt;polyline fill="none" stroke="{{#VAR=NESSIE_COLOR:html_escape}}#212121{{/VAR}}"{{#VAR=BI_SPACE}} {{/VAR}}
+            stroke-width="5" stroke-miterlimit="10"{{#VAR=BI_SPACE}} {{/VAR}}
+            points="2.875,2.958 21.166,20.957 2.917,38.916"&gt;
+  &lt;/polyline&gt;
+&lt;/svg&gt;
+{{/SEC}}{{/FILE}}{{/INC}}      &lt;/div&gt;
+{{/SEC}}  &lt;/{{#VAR=BUTTON_CONTENT_TAG:html_escape_with_arg=attribute}}a{{/VAR}}&gt;
+{{#SEC=NOT_IE9_OR_LESS}}&lt;/div&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}  &lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh115c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-empty rh115{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/empty_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=HTML_SNIPPET:none}}{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}  &lt;/table&gt;
+&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh12c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-empty rh12{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/empty_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=HTML_SNIPPET:none}}{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}  &lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}{{#SEC=REPEATED_CHILD_SECTION}}      &lt;tr&gt;{{#INC=CHILD_BOX}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=CELL_BOX_SECTION}}&lt;td class="{{#VAR=RHINDLE_TD_CLASS_NAME:html_escape}}rh2c{{/VAR}}"&gt;
+{{/SEC}}&lt;div class="{{#VAR=RHINDLE_DIV_CLASS_NAMES:html_escape}}rh-box-empty rh2{{/VAR}}" id="{{#VAR=RHINDLE_DIV_ID:html_escape}}{{/VAR}}"
+&gt;
+{{#INC=BOX_CONTENT}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/empty_box_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=HTML_SNIPPET:none}}{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=CELL_BOX_SECTION}}&lt;/td&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}&lt;/tr&gt;
+{{/SEC}}  &lt;/table&gt;
+&lt;/div&gt;
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/li&gt;
+{{#SEC=RHINDLE_BUILD_TEXT_AD}}&lt;script&gt;
+  buildTextAd(adSlot, {{#VAR=POS:javascript_escape_with_arg=number}}0{{/VAR}});
+&lt;/script&gt;
+{{/SEC}}{{#INC=EXECUTE_VIEW_URL}}{{#FILE=versioned_data/dev/templates/elements/js_utils/execute_tracking_url_post20091002.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=TRACKING_VIEW_URL_SECTION}}  &lt;script&gt;vu("{{#VAR=TRACKING_URL:javascript_escape}}https://googleads.g.doubleclick.net/pagead/adview?ai\x3dCFNLExeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoElgJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmMAE0Ljj1t8BiAWWq_oykgUECAQYAZIFBAgFGASgBjfYBgKAB7bRmR-oB47OG6gH1ckbqAeoBqgHugaoB9nLG6gHz8wbqAemvhuoB5jOG6gH6c0b2AcB8gcEENKtAaAI75wBsAgC0ggHCIBhEAEYAoAKAdgTAoIUERoPZ2xhbXVycHJlc3MubmV0\x26sigh\x3dDONgMaOhkbc\x26template_id\x3d492\x26tpd\x3dAGWhJmslzg2qLvVs2yhvJDnBc7SNwhZArHH5i3OyoTHvHSWoxg{{/VAR}}")&lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#SEC=IMPRESSION_TRACKING_URL_SECTION}}{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}    &lt;/ul&gt;
+  &lt;/div&gt;
+{{#INC=AD_CHROME}}{{#FILE=versioned_data/dev/templates/elements/text_ad_new/rhindle_ad_slot_chrome_post.tpl}}{{#SEC=__{{MAIN}}__}}&lt;div class=ads_chrome_top&gt;
+&lt;/div&gt;
+&lt;div class=ads_chrome_bottom&gt;
+&lt;/div&gt;
+&lt;div class=ads_chrome_left&gt;
+&lt;/div&gt;
+&lt;div class=ads_chrome_right&gt;
+&lt;/div&gt;
+{{/SEC}}{{/FILE}}{{/INC}}&lt;/div&gt;
+{{#SEC=INTERSTITIAL_MTA_ELEMENT_SECTION}}{{/SEC}}{{#SEC=JAVASCRIPT_SNIPPET_SECTION}}{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=ATTRIBUTION_BAR}}{{#FILE=versioned_data/dev/templates/elements/attribution/attribution_overlay_post20100426.tpl}}{{#SEC=__{{MAIN}}__}}{{#INC=TILE_ATTRIBUTION}}{{#FILE=versioned_data/dev/templates/elements/attribution/tile_attribution_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=LOAD_ATTRIBUTION_CSS}}&lt;style&gt;
+    div{
+      margin:0;
+      padding:0;
+    }
+{{#SEC=TAP_PROTECTION_SECTION}}      .abgcp{
+        height:{{#VAR=ATTRIBUTION_INFO_CONTAINER_HEIGHT}}15{{/VAR}}px;
+        padding-{{#VAR=ATTRIBUTION_H_ALIGN}}right{{/VAR}}:{{#VAR=TAP_PROTECTION_X_BORDER_SIZE}}1{{/VAR}}px;
+        padding-{{#VAR=ATTRIBUTION_V_ALIGN}}top{{/VAR}}:{{#VAR=TAP_PROTECTION_Y_BORDER_SIZE}}1{{/VAR}}px;
+        padding-{{#VAR=ATTRIBUTION_H_ALIGN_OPPOSITE}}left{{/VAR}}:{{#VAR=TAP_PROTECTION_X_SIZE}}9{{/VAR}}px;
+        padding-{{#VAR=ATTRIBUTION_V_ALIGN_OPPOSITE}}bottom{{/VAR}}:{{#VAR=TAP_PROTECTION_Y_SIZE}}13{{/VAR}}px;
+        {{#VAR=ATTRIBUTION_H_ALIGN}}right{{/VAR}}:{{#VAR=ATTRIBUTION_CLICK_PROTECTION_H_OFFSET}}0{{/VAR}}px;
+        {{#VAR=ATTRIBUTION_V_ALIGN}}top{{/VAR}}:{{#VAR=ATTRIBUTION_CLICK_PROTECTION_V_OFFSET}}0{{/VAR}}px;
+        position:{{#VAR=ATTRIBUTION_POSITION}}absolute{{/VAR}};
+        width:{{#VAR=ATTRIBUTION_INFO_CONTAINER_WIDTH}}30{{/VAR}}px;
+        z-index:{{#VAR=ATTRIBUTION_Z_INDEX}}2147483646{{/VAR}};
+      }
+{{/SEC}}    .abgc{
+      display:{{#VAR=ATTRIBUTION_INFO_CONTAINER_DISPLAY}}block{{/VAR}};
+      height:{{#VAR=ATTRIBUTION_INFO_CONTAINER_HEIGHT}}15{{/VAR}}px;
+      position:{{#VAR=ATTRIBUTION_POSITION}}absolute{{/VAR}};
+      {{#VAR=ATTRIBUTION_H_ALIGN}}right{{/VAR}}:{{#VAR=ATTRIBUTION_CONTAINER_H_OFFSET}}1{{/VAR}}px;
+      {{#VAR=ATTRIBUTION_V_ALIGN}}top{{/VAR}}:{{#VAR=ATTRIBUTION_CONTAINER_V_OFFSET}}1{{/VAR}}px;
+      text-rendering:geometricPrecision;
+      z-index:{{#VAR=ATTRIBUTION_Z_INDEX}}2147483646{{/VAR}};
+    }
+    .abgb{
+{{#SEC=INLINE_SVG_SECTION}}        display:inline-block;
+{{/SEC}}      height:{{#VAR=ATTRIBUTION_INFO_IMG_HEIGHT}}15{{/VAR}}px;
+    }
+    .abgc,
+{{#SEC=TAP_PROTECTION_SECTION}}    .abgcp,
+{{/SEC}}    .jar .abgc,
+{{#SEC=TAP_PROTECTION_SECTION}}    .jar .abgcp,
+{{/SEC}}    .jar .cbb{
+      opacity:1;
+    }
+{{#SEC=ATTRIBUTION_ABLATION_SECTION}}    .jaa .abgc,
+{{#SEC=TAP_PROTECTION_SECTION}}    .jaa .abgcp,
+{{/SEC}}    .jaa .cbb{
+      display:none;
+    }
+{{/SEC}}{{#SEC=CBB_SECTION}}      .abgc{
+        cursor:pointer;
+      }
+      .cbb{
+        cursor:pointer;
+        height:{{#VAR=CLOSE_BUTTON_HEIGHT}}15{{/VAR}}px;
+        width:{{#VAR=CLOSE_BUTTON_WIDTH}}15{{/VAR}}px;
+        z-index:{{#VAR=ATTRIBUTION_Z_INDEX}}2147483646{{/VAR}};
+        background-color:#ffffff;
+        opacity:0;
+      }
+      .cbb svg{
+        position:absolute;
+        {{#VAR=ATTRIBUTION_V_ALIGN}}top{{/VAR}}:0;
+        {{#VAR=ATTRIBUTION_H_ALIGN}}right{{/VAR}}:0;
+        height:15px;
+        width:15px;
+        stroke:#00aecd;
+        stroke-width:1.25;
+      }
+      .abgb{
+        position:absolute;
+        {{#VAR=ATTRIBUTION_H_ALIGN}}right{{/VAR}}:{{#VAR=ATTRIBUTION_ICON_H_OFFSET}}15{{/VAR}}px;
+        {{#VAR=ATTRIBUTION_V_ALIGN}}top{{/VAR}}:{{#VAR=ATTRIBUTION_ICON_V_OFFSET}}0{{/VAR}}px;
+      }
+      .cbb{
+        position:absolute;
+        {{#VAR=ATTRIBUTION_H_ALIGN}}right{{/VAR}}:{{#VAR=CBB_H_OFFSET}}0{{/VAR}}px;
+        {{#VAR=ATTRIBUTION_V_ALIGN}}top{{/VAR}}:{{#VAR=CBB_V_OFFSET}}0{{/VAR}}px;
+      }
+{{/SEC}}    .abgs{
+      display:none;
+      height:100%;
+    }
+    .abgl{
+      text-decoration:none;
+    }
+{{#SEC=INLINE_SVG_SECTION}}      .abgs svg,
+      .abgb svg{
+        display:inline-block;
+        height:15px;
+        width:auto;
+        vertical-align:top;
+      }
+      .abgc .il-wrap{
+        background-color:#ffffff;
+        height:15px;
+        white-space:nowrap;
+      }
+      .abgc .il-wrap.exp{
+        border-{{#VAR=ATTRIBUTION_V_ALIGN_OPPOSITE}}bottom{{/VAR}}-{{#VAR=ATTRIBUTION_H_ALIGN_OPPOSITE}}left{{/VAR}}-radius:5px;
+      }
+      .abgc .il-text,
+      .abgc .il-icon{
+        display:inline-block;
+      }
+      .abgc .il-text{
+        padding-{{#VAR=ATTRIBUTION_H_ALIGN}}right{{/VAR}}:1px;
+        padding-{{#VAR=ATTRIBUTION_H_ALIGN_OPPOSITE}}left{{/VAR}}:5px;
+        height:{{#VAR=INLINE_SVG_TEXT_HEIGHT}}15{{/VAR}}px;
+        width:{{#VAR=INLINE_SVG_TEXT_WIDTH}}84{{/VAR}}px;
+      }
+      .abgc .il-icon{
+        height:{{#VAR=INLINE_SVG_ICON_HEIGHT}}15{{/VAR}}px;
+        width:{{#VAR=INLINE_SVG_ICON_WIDTH}}15{{/VAR}}px;
+      }
+      .abgc .il-text svg{
+        fill:#000000;
+      }
+      .abgc .il-icon svg{
+        fill:#00aecd
+      }
+{{/SEC}}&lt;/style&gt;
+{{/SEC}}{{#SEC=TAP_PROTECTION_SECTION}}&lt;div id="abgcp{{#VAR=POS}}{{/VAR}}" class="abgcp"&gt;
+{{/SEC}}&lt;div id="abgc{{#VAR=POS}}{{/VAR}}" class="abgc" dir="ltr" aria-hidden="true"&gt;
+  &lt;div id="abgb{{#VAR=POS}}{{/VAR}}" class="abgb"&gt;
+{{#SEC=INLINE_SVG_SECTION}}      &lt;div class="il-wrap"&gt;
+        &lt;div class="il-icon"&gt;
+        {{#VAR=ATTRIBUTION_ICON_SVG_MARKUP}}&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 15 15"&gt;&lt;path d="M7.5,1.5a6,6,0,1,0,0,12a6,6,0,1,0,0,-12m0,1a5,5,0,1,1,0,10a5,5,0,1,1,0,-10ZM6.625,11l1.75,0l0,-4.5l-1.75,0ZM7.5,3.75a1,1,0,1,0,0,2a1,1,0,1,0,0,-2Z"&gt;&lt;/path&gt;&lt;/svg&gt;{{/VAR}}
+        &lt;/div&gt;
+      &lt;/div&gt;
+{{/SEC}}  &lt;/div&gt;
+  &lt;div id="abgs{{#VAR=POS}}{{/VAR}}" class="abgs"&gt;
+    &lt;a id="abgl{{#VAR=POS}}{{/VAR}}" class="abgl" href="{{#VAR=ATTRIBUTION_DESTINATION:url_escape_with_arg=html}}https://adssettings.google.com/whythisad?reasons=AB3afGEAAAFzW1tbW251bGwsWzEwXSxudWxsLG51bGwsbnVsbCxbIjkyODA0Il1dLFtudWxsLG51bGwsW251bGwsbnVsbCxudWxsLCJodHRwczovL2Rpc3BsYXlhZHMtZm9ybWF0cy5nb29nbGV1c2VyY29udGVudC5jb20vYWRzL3ByZXZpZXcvY29udGVudC5qcz9jbGllbnQ9d3RhXHUwMDI2b2JmdXNjYXRlZEN1c3RvbWVySWQ9MzUzNjUwMzAwNlx1MDAyNmNyZWF0aXZlSWQ9MjU4MDgwNjU2NzE5XHUwMDI2dmVyc2lvbklkPTBcdTAwMjZhZEdyb3VwQ3JlYXRpdmVJZD0yMTc1NDU4NjM3MzBcdTAwMjZodG1sUGFyZW50SWQ9cHJldi0wXHUwMDI2aGVpZ2h0PTBcdTAwMjZ3aWR0aD0wXHUwMDI2c2lnPUFDaVZCX3kwUENyNnNhbFJTS1E0NjhZX2h4YzRta1p0X2ciXV1dXV2TZSyWRDJPXJ9hw3jsMHcBDP40Ejcd88P-fR0YVOS8gVlpnltCYG4mmrMDzVrxOO76EuG28c1274JfBeaKwQuxKCOVUmRlTrDbgs46zn5Qy9OEfI27tfZkpCr4ZVlUvV4YJ67LHEwn2IXjkk_bQ7Zlg2uKJgamzfC1AEnt2KIjs-i2LKwoD6VIXXix9hgSrBCbK9e9YEPXyFprgC9Z7pSGN7LFWP2YpO84otX3kt4A1SmHf8J_k6Bzsq4uqtGRPnEamZxHDjHxFb883HAJhHOoy3zHJeDXxrRuLxRZXPHbkHOh8nPTOfeN3kbCNpRtHHMir1ILW1JV5zwGdNDfujbh,-c1ytS3bcRIJ5kMZDc7h7Q&amp;amp;source=display&amp;amp;cbt=a7ZvL3S-lakIsuT5taoGEJar-jIYzv_6HyIUYml6bmlzLWFrYWRlbWlqYS5jb20yCAgFExiR_CMUQhdjYS1wdWItMDMwMzAwNzkyOTkyMTQzMEgGWDdg7ANwAQ&amp;amp;cv=https://googleads.g.doubleclick.net/pagead/conversion/%3Fai%3DCm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ%26sigh%3DwfXtzvnu0WM{{/VAR}}" target="{{#VAR=ABG_TARGET}}_blank{{/VAR}}"&gt;
+    &lt;/a&gt;
+  &lt;/div&gt;
+{{#SEC=CBB_SECTION}}{{#SEC=CLOSE_BUTTON_INSIDE_ATTRIBUTION_CONTAINER}}  &lt;div id="cbb{{#VAR=POS}}{{/VAR}}" class="cbb" aria-hidden="true"&gt;{{#VAR=CLOSE_BUTTON_SVG_MARKUP}}&lt;svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 15 15"&gt;&lt;path d="M3.25,3.25l8.5,8.5M11.75,3.25l-8.5,8.5"/&gt;&lt;/svg&gt;{{/VAR}}&lt;/div&gt;
+{{/SEC}}{{/SEC}}&lt;/div&gt;
+{{#SEC=CBB_SECTION}}{{/SEC}}{{#SEC=TAP_PROTECTION_SECTION}}&lt;/div&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=MUTE_OVERLAY}}{{#FILE=versioned_data/dev/templates/elements/attribution/mute_overlay_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=MUTE_OVERLAY_SECTION}}&lt;style&gt;
+.mute_panel{
+  z-index:{{#VAR=ATTRIBUTION_Z_INDEX}}2147483646{{/VAR}};
+}
+.abgac{
+  position:absolute;
+  left:0px;
+  top:0px;
+  z-index:{{#VAR=ATTRIBUTION_Z_INDEX}}2147483646{{/VAR}};
+  display:none;
+  width:100%;
+  height:100%;
+  background-color:#FAFAFA;
+}
+{{#SEC=SURVEY_LOAD_INDICATOR}}  .mlsc{
+    height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+  .mls{
+    animation:mlskf 2s linear infinite;
+    height:50%;
+    width:50%;
+  }
+  .mlsd{
+    stroke-dasharray:1,189;
+    stroke-dashoffset:0;
+    animation:mlsdkf 1.4s ease-in-out infinite;
+  }
+  @keyframes mlskf{
+    100%{
+      transform:rotate(360deg);
+    }
+  }
+  @keyframes mlsdkf{
+    0%{
+      stroke-dasharray:1,189;
+      stroke-dashoffset:0;
+    }
+    50%{
+      stroke-dasharray:134,189;
+      stroke-dashoffset:-53px;
+    }
+    100%{
+      stroke-dasharray:134,189;
+      stroke-dashoffset:-188px;
+    }
+  }
+{{/SEC}}&lt;/style&gt;
+&lt;div id="mute_panel{{#VAR=POS}}{{/VAR}}" class="mute_panel" aria-hidden="true"&gt;
+  &lt;div id="abgac{{#VAR=POS}}{{/VAR}}" class="abgac" aria-hidden="true"&gt;
+{{#SEC=SURVEY_LOAD_INDICATOR}}    &lt;div id="mlsc{{#VAR=POS}}{{/VAR}}" class="mlsc"&gt;
+      &lt;svg class="mls" viewBox="50 50 100 100"&gt;
+        &lt;circle class="mlsd" cx="100" cy="100" r="30" fill="none" stroke="#9E9E9E" stroke-width="3"/&gt;
+      &lt;/svg&gt;
+    &lt;/div&gt;
+{{/SEC}}  &lt;/div&gt;
+&lt;/div&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=ATTRIBUTION_PARAMS}}{{#FILE=versioned_data/dev/templates/elements/attribution/attribution_params_post.tpl}}{{#SEC=__{{MAIN}}__}}&lt;script&gt;
+{{#SEC=DEFAULT_ATTRIBUTION}}  var abgp={
+    imi:{{#VAR=IS_MUTABLE_IMPRESSION}}true{{/VAR}},
+    hw:{{#VAR=ATTRIBUTION_INFO_IMG_WIDTH}}15{{/VAR}},
+    sw:{{#VAR=ATTRIBUTION_UL_WIDTH}}97{{/VAR}},
+    hh:{{#VAR=ATTRIBUTION_INFO_IMG_HEIGHT}}15{{/VAR}},
+    sh:{{#VAR=ABG_IMG_HEIGHT}}15{{/VAR}},
+    himg:'{{#VAR=LOCATION_SENSITIVE_CAFE_HOST:javascript_escape}}https://tpc.googlesyndication.com{{/VAR}}'+
+         '{{#VAR=DYNAMIC_ATTRIBUTION_INFO_IMG_URL:url_query_escape:javascript_escape}}/pagead/images/abg/icon.png{{/VAR}}',
+    simg:'{{#VAR=LOCATION_SENSITIVE_CAFE_HOST}}https://tpc.googlesyndication.com{{/VAR}}'+
+         '{{#VAR=ABG_IMG_URL:url_query_escape:javascript_escape}}/pagead/images/abg/sr.png{{/VAR}}',
+    alt:'{{#VAR=ATTRIBUTION_TEXT:javascript_escape}}ÐÐ³Ð»Ð°ÑÐ¸ Google-Ð°{{/VAR}}',
+    t:'{{#VAR=ATTRIBUTION_TEXT_DISPLAY}}Google{{/VAR}}',
+    tw:{{#VAR=ATTRIBUTION_TEXT_WIDTH}}36{{/VAR}},
+    t2:'{{#VAR=ATTRIBUTION_TEXT2_DISPLAY}}ÐÐ³Ð»Ð°ÑÐ¸{{/VAR}}',
+    t2w:{{#VAR=ATTRIBUTION_TEXT2_WIDTH}}37{{/VAR}},
+    tbo:{{#VAR=ATTRIBUTION_TEXT_BASELINE_OFFSET}}0{{/VAR}},
+    att:'{{#VAR=ATTRIBUTION_TYPE}}adsbygoogle{{/VAR}}',
+    ff:'{{#VAR=ATTRIBUTION_FORCE_FORMAT}}{{/VAR}}',
+    halign:'{{#VAR=ATTRIBUTION_H_ALIGN:javascript_escape}}right{{/VAR}}',
+    fe:{{#VAR=ATTRIBUTION_FORCE_EXPANSION}}false{{/VAR}},
+    iba:{{#VAR=ATTRIBUTION_IS_BOTTOM_ALIGNED:javascript_escape}}false{{/VAR}},
+    lttp:{{#VAR=ENABLE_LISTEN_TO_TAP_PROTECTION}}false{{/VAR}},
+    ci:'{{#VAR=POS}}{{/VAR}}',
+    nc:{{#VAR=NUM_CREATIVES}}1{{/VAR}},
+    ufdj:{{#VAR=USER_FEEDBACK_DATA_JSON}}{"height":250,"width":300,"attribution":{"user_feedback_data":{"mute_icon_url":"https://googleads.g.doubleclick.net/pagead/images/mtad/x_blue.png","pub_feedback_icon_url":"https://googleads.g.doubleclick.net/pagead/images/mtad/x_blue.png","conversion_url":"https://googleads.g.doubleclick.net/pagead/conversion/?ai=Cm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ\u0026sigh=wfXtzvnu0WM","close_button_token":"a7ZvL3S-lakIsuT5taoGEJar-jIYzv_6HyIUYml6bmlzLWFrYWRlbWlqYS5jb20yCAgFExiR_CMUQhdjYS1wdWItMDMwMzAwNzkyOTkyMTQzMEgGWDdg7ANwAQ","interaction_conversion":{"label":"user_feedback_menu_interaction","label_instance":"","include_close_button_token":false},"survey_header":"Ð¨ÑÐ° Ð½Ð¸ÑÐµ Ñ ÑÐµÐ´Ñ ÑÐ° Ð¾Ð²Ð¸Ð¼ Ð¾Ð³Ð»Ð°ÑÐ¾Ð¼?","back_icon_url":"https://googleads.g.doubleclick.net/pagead/images/mtad/back_blue.png","mute_confirmation_header":"Ð¥Ð²Ð°Ð»Ð° Ð²Ð°Ð¼ Ð½Ð° Ð¿Ð¾Ð²ÑÐ°ÑÐ½Ð¸Ð¼ Ð¸Ð½ÑÐ¾ÑÐ¼Ð°ÑÐ¸ÑÐ°Ð¼Ð°!","mute_confirmation_text":"ÐÑÐµÐ³Ð»ÐµÐ´Ð°ÑÐµÐ¼Ð¾ Ð¾Ð²Ð°Ñ Ð¾Ð³Ð»Ð°Ñ Ð´Ð° Ð±Ð¸ÑÐ¼Ð¾ Ð¿Ð¾Ð±Ð¾ÑÑÐ°Ð»Ð¸ Ð²Ð°Ñ Ð´Ð¾Ð¶Ð¸Ð²ÑÐ°Ñ Ñ Ð½Ð°ÑÐµÐ´Ð½Ð¾Ð¼ Ð¿ÐµÑÐ¸Ð¾Ð´Ñ.","pub_feedback_confirmation_header":"Ð¥Ð²Ð°Ð»Ð° Ð²Ð°Ð¼ Ð½Ð° Ð¿Ð¾Ð²ÑÐ°ÑÐ½Ð¸Ð¼ Ð¸Ð½ÑÐ¾ÑÐ¼Ð°ÑÐ¸ÑÐ°Ð¼Ð°!","pub_feedback_confirmation_text":"ÐÐ¾ÑÐ¸ÑÑÐ¸ÑÐµÐ¼Ð¾ Ð²Ð°ÑÐµ Ð¿Ð¾Ð²ÑÐ°ÑÐ½Ðµ Ð¸Ð½ÑÐ¾ÑÐ¼Ð°ÑÐ¸ÑÐµ Ð´Ð° Ð±Ð¸ÑÐ¼Ð¾ Ð¿ÑÐµÐ³Ð»ÐµÐ´Ð°Ð»Ð¸ Ð¾Ð³Ð»Ð°ÑÐµ Ð½Ð° Ð¾Ð²Ð¾Ð¼ ÑÐ°ÑÑÑ.","encoded_cookie":"CAASEuRoDd0At8pHrEhxOEA30bP__Q","close_message":"{\"msg_type\":\"ablate-me\",\"key_value\":[{\"key\":\"collapse-after-close\",\"value\":\"animate\"},{\"key\":\"secs-to-countdown\",\"value\":\"1\"},{\"key\":\"countdown\",\"value\":\"3\"},{\"key\":\"message-tick\",\"value\":\"1\"}],\"googMsgType\":\"sth\"}","closing_countdown_text":"ÐÐ°ÑÐ²Ð°ÑÐ°ÑÐµ Ð¾Ð³Ð»Ð°ÑÐ°: %1$d","attribution_text":"ÐÐ³Ð»Ð°ÑÐ¸ Google-Ð°","attribution_icon_url":"https://googleads.g.doubleclick.net/pagead/images/mtad/abg_blue.png","attribution_destination_url":"https://www.google.com/url?ct=abg\u0026q=https://www.google.com/adsense/support/bin/request.py%3Fcontact%3Dabg_afc%26url%3Dhttps://glamurpress.net/2018/09/pocelo-snimanje-zvezda-granda-pogledajte-ko-cini-novi-sastav-zirija-ko-su-voditelji-i-kako-izgleda-nova-scena-foto/%26gl%3DBA%26hl%3Dsr%26client%3Dca-pub-0303007929921430%26ai0%3DCm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ\u0026usg=AFQjCNHZfoIjSrvW8KTwonKnC4TRAzr6TQ","ad_feedback_icon_url":"https://googleads.g.doubleclick.net/pagead/images/mtad/x_blue.png","is_rtl_language":false,"feedback_options":[{"text":"ÐÑÐµÑÑÐ°Ð½Ð¸ Ð´Ð° Ð¿ÑÐ¸ÐºÐ°Ð·ÑÑÐµÑ Ð¾Ð²Ð°Ñ Ð¾Ð³Ð»Ð°Ñ","conversion":{"label":"user_feedback_menu_option","label_instance":"1","include_close_button_token":true},"survey":{"header":"Ð¨ÑÐ° Ð½Ð¸ÑÐµ Ñ ÑÐµÐ´Ñ ÑÐ° Ð¾Ð²Ð¸Ð¼ Ð¾Ð³Ð»Ð°ÑÐ¾Ð¼?","options":[{"text":"ÐÐ¸Ð´ÐµÐ¾/Ð»Ð° ÑÐ°Ð¼ Ð¾Ð²Ð°Ñ Ð¾Ð³Ð»Ð°Ñ Ð²Ð¸ÑÐµ Ð¿ÑÑÐ°","conversion":{"label":"mute_survey_option","label_instance":"2","include_close_button_token":true}},{"text":"ÐÐ²Ð°Ñ Ð¾Ð³Ð»Ð°Ñ Ð¼Ðµ Ð½Ðµ Ð¸Ð½ÑÐµÑÐµÑÑÑÐµ","conversion":{"label":"mute_survey_option","label_instance":"7","include_close_button_token":true}},{"text":"ÐÐ³Ð»Ð°Ñ ÑÐµ Ð±Ð¸Ð¾ Ð½ÐµÐ¿ÑÐ¸ÐºÐ»Ð°Ð´Ð°Ð½","conversion":{"label":"mute_survey_option","label_instance":"8","include_close_button_token":true}},{"text":"Ð¡Ð°Ð´ÑÐ¶Ð¸ Ð¾Ð³Ð»Ð°ÑÐµ","conversion":{"label":"mute_survey_option","label_instance":"3","include_close_button_token":true}}]},"undo_conversion":{"label":"user_feedback_undo","label_instance":"1","include_close_button_token":true}}],"mute_panel_data":{"adchoices_icon_url":"https://googleads.g.doubleclick.net/pagead/images/adchoices/iconx2-000000.png","adchoices_button_text":"ÐÐ·Ð±Ð¾Ñ Ð¾Ð³Ð»Ð°ÑÐ°","closed_message_text":"ÐÐ³Ð»Ð°Ñ ÑÐµ Ð·Ð°ÑÐ²Ð¾ÑÐ¸Ð¾ %1$s","enable_lightbox":false,"google_logo_url":"https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_dark_color_84x28dp.png","report_ad_button_text":"ÐÐµ Ð¿ÑÐ¸ÐºÐ°Ð·ÑÑ Ð¾Ð²Ð°Ñ Ð¾Ð³Ð»Ð°Ñ","confirmation_text":"ÐÐ¾ÐºÑÑÐ°ÑÐµÐ¼Ð¾ Ð´Ð° Ð½Ðµ Ð¿ÑÐ¸ÐºÐ°Ð·ÑÑÐµÐ¼Ð¾ ÑÐ°Ñ Ð¾Ð³Ð»Ð°Ñ Ð¿Ð¾Ð½Ð¾Ð²Ð¾","ads_by_google_icon_url":"https://googleads.g.doubleclick.net/pagead/images/abg/iconx2-000000.png","ads_by_google_button_text":"ÐÐ³Ð»Ð°ÑÐ¸ Google-Ð°","see_my_google_ad_settings_text":"ÐÑÐ¸ÐºÐ°Ð¶Ð¸ Ð¼Ð¾ÑÐ° Ð¿Ð¾Ð´ÐµÑÐ°Ð²Ð°ÑÐ° Google Ð¾Ð³Ð»Ð°ÑÐ°","protocol_gstatic_host":"https://www.gstatic.com","jake_mta_context":"","overlay_message_text":"ÐÐ³Ð»Ð°ÑÐ¸ Ð¾Ð´ %1$s","ad_settings_text":"ÐÐ¾Ð´ÐµÑÐ°Ð²Ð°ÑÐ° Ð¾Ð³Ð»Ð°ÑÐ°","ad_settings_url":"https://adssettings.google.com"},"why_this_ad_token":"AB3afGEAAAFzW1tbW251bGwsWzEwXSxudWxsLG51bGwsbnVsbCxbIjkyODA0Il1dLFtudWxsLG51bGwsW251bGwsbnVsbCxudWxsLCJodHRwczovL2Rpc3BsYXlhZHMtZm9ybWF0cy5nb29nbGV1c2VyY29udGVudC5jb20vYWRzL3ByZXZpZXcvY29udGVudC5qcz9jbGllbnQ9d3RhXHUwMDI2b2JmdXNjYXRlZEN1c3RvbWVySWQ9MzUzNjUwMzAwNlx1MDAyNmNyZWF0aXZlSWQ9MjU4MDgwNjU2NzE5XHUwMDI2dmVyc2lvbklkPTBcdTAwMjZhZEdyb3VwQ3JlYXRpdmVJZD0yMTc1NDU4NjM3MzBcdTAwMjZodG1sUGFyZW50SWQ9cHJldi0wXHUwMDI2aGVpZ2h0PTBcdTAwMjZ3aWR0aD0wXHUwMDI2c2lnPUFDaVZCX3kwUENyNnNhbFJTS1E0NjhZX2h4YzRta1p0X2ciXV1dXV2TZSyWRDJPXJ9hw3jsMHcBDP40Ejcd88P-fR0YVOS8gVlpnltCYG4mmrMDzVrxOO76EuG28c1274JfBeaKwQuxKCOVUmRlTrDbgs46zn5Qy9OEfI27tfZkpCr4ZVlUvV4YJ67LHEwn2IXjkk_bQ7Zlg2uKJgamzfC1AEnt2KIjs-i2LKwoD6VIXXix9hgSrBCbK9e9YEPXyFprgC9Z7pSGN7LFWP2YpO84otX3kt4A1SmHf8J_k6Bzsq4uqtGRPnEamZxHDjHxFb883HAJhHOoy3zHJeDXxrRuLxRZXPHbkHOh8nPTOfeN3kbCNpRtHHMir1ILW1JV5zwGdNDfujbh,-c1ytS3bcRIJ5kMZDc7h7Q","why_this_ad_url":"https://adssettings.google.com/whythisad?reasons=AB3afGEAAAFzW1tbW251bGwsWzEwXSxudWxsLG51bGwsbnVsbCxbIjkyODA0Il1dLFtudWxsLG51bGwsW251bGwsbnVsbCxudWxsLCJodHRwczovL2Rpc3BsYXlhZHMtZm9ybWF0cy5nb29nbGV1c2VyY29udGVudC5jb20vYWRzL3ByZXZpZXcvY29udGVudC5qcz9jbGllbnQ9d3RhXHUwMDI2b2JmdXNjYXRlZEN1c3RvbWVySWQ9MzUzNjUwMzAwNlx1MDAyNmNyZWF0aXZlSWQ9MjU4MDgwNjU2NzE5XHUwMDI2dmVyc2lvbklkPTBcdTAwMjZhZEdyb3VwQ3JlYXRpdmVJZD0yMTc1NDU4NjM3MzBcdTAwMjZodG1sUGFyZW50SWQ9cHJldi0wXHUwMDI2aGVpZ2h0PTBcdTAwMjZ3aWR0aD0wXHUwMDI2c2lnPUFDaVZCX3kwUENyNnNhbFJTS1E0NjhZX2h4YzRta1p0X2ciXV1dXV2TZSyWRDJPXJ9hw3jsMHcBDP40Ejcd88P-fR0YVOS8gVlpnltCYG4mmrMDzVrxOO76EuG28c1274JfBeaKwQuxKCOVUmRlTrDbgs46zn5Qy9OEfI27tfZkpCr4ZVlUvV4YJ67LHEwn2IXjkk_bQ7Zlg2uKJgamzfC1AEnt2KIjs-i2LKwoD6VIXXix9hgSrBCbK9e9YEPXyFprgC9Z7pSGN7LFWP2YpO84otX3kt4A1SmHf8J_k6Bzsq4uqtGRPnEamZxHDjHxFb883HAJhHOoy3zHJeDXxrRuLxRZXPHbkHOh8nPTOfeN3kbCNpRtHHMir1ILW1JV5zwGdNDfujbh,-c1ytS3bcRIJ5kMZDc7h7Q\u0026source=display\u0026cbt=a7ZvL3S-lakIsuT5taoGEJar-jIYzv_6HyIUYml6bmlzLWFrYWRlbWlqYS5jb20yCAgFExiR_CMUQhdjYS1wdWItMDMwMzAwNzkyOTkyMTQzMEgGWDdg7ANwAQ\u0026cv=https://googleads.g.doubleclick.net/pagead/conversion/%3Fai%3DCm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ%26sigh%3DwfXtzvnu0WM","why_this_ad_text":"ÐÐ°ÑÑÐ¾ Ð¾Ð²Ð°Ñ Ð¾Ð³Ð»Ð°Ñ?","is_mutable_impression":true}},"flags":[{"name":"enable_native_jake_ui","value":"true"},{"name":"enable_alt_native_jake_ui","value":"true"},{"name":"enforce_delegate_native_congruence","value":"true"},{"name":"jake_ui_extension","value":"jake_default_ui"}]}{{/VAR}},
+    opi:{{#VAR=OPEN_IN_BROWSER}}false{{/VAR}},
+    opai:{{#VAR=OPEN_ATTRIBUTION_INLINE}}false{{/VAR}},
+    ti:{{#VAR=TRIGGER_INTERSTITIAL}}false{{/VAR}},
+    mob:{{#VAR=IS_MOBILE_DEVICE}}true{{/VAR}},
+    eaca:{{#VAR=ENABLE_EXTRACREATIVE_ATTRIBUTION}}false{{/VAR}},
+    eda:{{#VAR=ENABLE_DELEGATE_ATTRIBUTION}}true{{/VAR}},
+    fdda:{{#VAR=FORCE_DISABLE_DELEGATE_ATTRIBUTION}}false{{/VAR}},
+    eisa:{{#VAR=ENABLE_INLINE_SVG_ATTRIBUTION}}true{{/VAR}},
+    ulf:{{#VAR=USE_LEGACY_FALLBACK}}false{{/VAR}},
+    swc:{{#VAR=SEND_WTA_CONVERSION}}true{{/VAR}},
+    aeol:{{#VAR=AUTO_EXPAND_ON_LOAD}}false{{/VAR}}
+  };
+{{/SEC}}&lt;/script&gt;
+&lt;script src="{{#VAR=LOCATION_SENSITIVE_CAFE_HOST}}https://tpc.googlesyndication.com{{/VAR}}/pagead/js/{{#VAR=GDP_VERSION_ID:url_query_escape}}r20180912{{/VAR}}/{{#VAR=CACHE_BUSTER_FOR_VERSIONED_FILES:url_query_escape}}r20110914{{/VAR}}/{{#VAR=ABG_FILE_NAME:url_query_escape}}abg_lite.js{{/VAR}}"&gt;&lt;/script&gt;
+{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{/FILE}}{{/INC}}{{#SEC=FIRST_IFRAME_ONLY}}{{#INC=QUERY_SIGNALS}}{{#FILE=versioned_data/dev/templates/elements/common/query_signals_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#INC=BACK_BUTTON_JS}}{{#FILE=versioned_data/dev/templates/elements/back_button/back_button_no_hydra_js_post20140520.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=WINDOW_FOCUS_SECTION}}{{#INC=WINDOW_FOCUS_COMPONENT}}{{#FILE=versioned_data/dev/templates/elements/client/hydra_component_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=EXTERNAL_JS_SECTION}}  &lt;script src="{{#VAR=CAFE_STATIC_HOST}}https://tpc.googlesyndication.com{{/VAR}}/pagead/js/{{#VAR=GDP_VERSION_ID:url_query_escape}}r20180912{{/VAR}}/{{#VAR=CACHE_BUSTER_FOR_VERSIONED_FILES:url_query_escape}}r20110914{{/VAR}}/client/ext/m_{{#VAR=COMPONENT_NAME}}window_focus_non_hydra{{/VAR}}{{#VAR=COMPONENT_SUFFIX}}{{/VAR}}.js"
+          {{#SEC=ASYNC_JS_SECTION}}{{#VAR=BI_SPACE}} {{/VAR}}async{{/SEC}}
+          &gt;&lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}  &lt;script&gt;
+    function initWindowFocus() {
+      window['window_focus_for_click'] =
+        wfocusnhinit(
+          "{{#VAR=CREATIVE_CONVERSION_URL_WITHOUT_LABEL:javascript_escape}}https://googleads.g.doubleclick.net/pagead/conversion/?ai\x3dCm4knxeOYW_vxKYn_3gPFzK7gC42b1elSsuT5taoGn-yivcABEAEgrJDGHmDHgICAwAKgAbKu5uADyAEGqQJG-fCIWG-zPqgDAcgDAqoEmQJP0DdwP6m3Z2oGc0XrDe9jNbEhTSyVxhZXtQDn1FAh9Bhnuesq3EOf98H6cBr7Ey2N_z2ODiNTdPiG-ZLs7_r2YHlLycf2jNXs5eUMJ7rDEndJdSdjUe3QwIM2-cOjbyuM5-wiEtfnSQdGHcTrYWB7JOjV1NEYpxYeER8-gF3mul_4h4FcYQY5PAILFJaMYwUVBK1uMb8J1KDKLOGok436gFHuS0YxAwfyFK6uB9GnmrF0LV1oEM2LMiWmqhWpQae2n3WuDYX-sWl1qdv15dHrdcFW_uODPPzDRALKTQ5nU-k4gXF-E4iw3AJMmcuLCxMAQIlNiwXqJfMtPavmv4OmbyndDcK72GALDXV-FvhkAw9q9F6OmFcIGMAE0Ljj1t8BiAWWq_oyoAY32AYCgAe20ZkfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhvYBwGgCO-cAbAIAtIIBwiAYRABGAKxCXllpQdQV8eEgAoB2BMCghQRGg9nbGFtdXJwcmVzcy5uZXQ\x26sigh\x3dwfXtzvnu0WM{{/VAR}}",
+          "{{#VAR=ESCAPED_GWS_QUERY_ID:javascript_escape}}xeOYW4WKKZCU3wPUwZuICQ{{/VAR}}",
+          "{{#VAR=ESCAPED_QEM_QUERY_ID:javascript_escape}}CLvonMyatd0CFYm_dwodRaYLvA{{/VAR}}"
+        );
+    }
+    
+    if (window.wfocusnhinit) {
+      initWindowFocus();
+    } else {
+      window['google_wf_async'] = initWindowFocus;
+    }
+  &lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=COOKIE_MATCH_REQUEST}}{{#FILE=versioned_data/dev/templates/elements/common/cookie_match_request_post20120103.tpl}}{{#SEC=__{{MAIN}}__}}&lt;iframe scrolling="no" frameborder=0 height=0 width=0 src="{{#VAR=REQUEST_URL:url_escape_with_arg=html}}https://pagead2.googlesyndication.com/pagead/s/cookie_push.html#aHR0cHM6Ly9vZHIubW9va2llMS5jb20vdC92Mi9zeW5jP3RhZ2lkPVYyXzQ1MzEmc3JjLnZpc2l0b3JpZD1DQUVTRU9JZWFfUzFPT2hkMGZyNG9ORjZ2RncmZ29vZ2xlX3B1c2g9QUhORjEzSVRvWk5NNERnaHl2elhxOGp1QVlNb0hKVGZrSHhHNHRlZ0NzU0x6VkJBJmdvb2dsZV9jdmVyPTE=,aHR0cHM6Ly9jbS5nLmRvdWJsZWNsaWNrLm5ldC9waXhlbC9hdHRyP2Q9QUhORjEzSmVXNnZnSGZyRUxyUGNvNDZZRmhIdnl3YVIzeTBK{{/VAR}}" style="position:absolute"&gt;
+&lt;/iframe&gt;
+{{/SEC}}{{/FILE}}{{/INC}}{{#INC=ACTIVE_VIEW}}{{#FILE=versioned_data/dev/templates/elements/common/active_view_post20120820.tpl}}{{#SEC=__{{MAIN}}__}}
+{{#SEC=MEASURING_ENABLED_SECTION}}&lt;script src="{{#VAR=CAFE_STATIC_HOST:url_escape_with_arg=html}}https://tpc.googlesyndication.com{{/VAR}}/pagead/js/{{#VAR=GDP_VERSION_ID:url_query_escape}}r20180912{{/VAR}}/{{#VAR=CACHE_BUSTER_FOR_VERSIONED_FILES:url_query_escape}}r20110914{{/VAR}}/activeview/osd_listener.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+osdlfm({{#VAR=PING_BACK_RATE:javascript_escape_with_arg=number}}-1{{/VAR}},'{{#VAR=SEARCH_LIFT_URL:javascript_escape}}{{/VAR}}','{{#VAR=LOG_INFO:javascript_escape}}BVXG1xeOYW_vxKYn_3gPFzK7gCwCy5Pm1qgYAABABOAHIAQbIAwKIBZar-jKgBjfSCAUIgGEQAcITGwoTCLLk-bWqBiIKCAEQARgBIABQABiyrubgAw{{/VAR}}','{{#VAR=ACTIVEVIEW_URL:javascript_escape}}{{/VAR}}',{{#VAR=AD_KEY:javascript_escape_with_arg=number}}3014949501{{/VAR}},{{#VAR=IS_IMMEDIATE_PING_ENABLED:javascript_escape_with_arg=number}}true{{/VAR}},'{{#VAR=ACTIVE_VIEW_METADATA:javascript_escape}}ud\x3d1\x26la\x3d0\x26alp\x3dai\x26alh\x3d1908493508\x26{{/VAR}}',{{#VAR=ACTIVE_VIEW_POLLING_SCHEME:javascript_escape_with_arg=number}}3{{/VAR}},'{{#VAR=ACTIVEVIEW_CID:javascript_escape}}CAASEuRoDd0At8pHrEhxOEA30bP__Q{{/VAR}}','{{#VAR=ACTIVE_VIEW_URL_PREFIX:javascript_escape}}https://pagead2.googlesyndication.com/pcs/activeview?xai\x3dAKAOjsu1oJW01rxjxTAdxdNyMQt00rEVHJLCr1eqnxHpthyO8zmWDVZ4NMHHT-4dtb5aEbXsb7iy1EVWRlk9dgOzL2_itVBEf4pIMXDBCaEyJPYuFNQLIjMmIP3EutOcz3skadP_FI2Heo4n2mfLfCXi\x26sig\x3dCg0ArKJSzObqEkYFNTeSEAE\x26cid\x3dCAASEuRoDd0At8pHrEhxOEA30bP__Q{{/VAR}}','{{#VAR=ACTIVE_VIEW_EXTERNAL_URL_PREFIX:javascript_escape}}{{/VAR}}');
+&lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=QS_CLICK_PROTECTION}}{{#FILE=versioned_data/dev/templates/elements/common/qs_click_protection_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=QS_CLICK_PROTECTION_SECTION}}{{#INC=QS_CLICK_PROTECTION_COMPONENT}}{{#FILE=versioned_data/dev/templates/elements/client/hydra_component_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=EXTERNAL_JS_SECTION}}  &lt;script src="{{#VAR=CAFE_STATIC_HOST}}https://tpc.googlesyndication.com{{/VAR}}/pagead/js/{{#VAR=GDP_VERSION_ID:url_query_escape}}r20180912{{/VAR}}/{{#VAR=CACHE_BUSTER_FOR_VERSIONED_FILES:url_query_escape}}r20110914{{/VAR}}/client/ext/m_{{#VAR=COMPONENT_NAME}}qs_click_protection{{/VAR}}{{#VAR=COMPONENT_SUFFIX}}{{/VAR}}.js"
+          
+          &gt;&lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}  &lt;script&gt;
+    googqscp.init({{#VAR=QS_CLICK_PROTECTION_PROTO}}[[[[null,1000,99,2,4,null,null,null,1],[null,500,99,2,8,null,null,null,1]]],null,null,null,null,null,null,null,0]{{/VAR}});
+  &lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=REACTIVE_AD_CONFIG_SECTION}}{{#FILE=versioned_data/dev/templates/elements/common/reactive_ad_config_piggyback_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#SEC=REPEATED_CONFIG_SECTION}}&lt;script&gt;
+  if (window.top &amp;&amp; window.top.postMessage) {
+    
+    window.top.postMessage('{"googMsgType":"rctcnf","config":{{#VAR=CONFIG:none}}{\"adFormat\":16}{{/VAR}}}', '*');
+  }
+&lt;/script&gt;
+{{/SEC}}{{/SEC}}{{/FILE}}{{/INC}}{{#SEC=JUMBLE_BISCOTTI_PIXEL_SECTION}}  &lt;img src="//{{#VAR=JUMBLE_BISCOTTI_PING_URL}}www.google.com/ads/measurement/l?ebcid=ALh7CaQtrX47QO-DXDGMHvx9738sYLA07FgZBbjAeU1CAIDLboX_iR8pGzWdKulKSitTtThBq3JI5RVzPHJ1x7RD_JraM6Xnpg{{/VAR}}" style="display:none;" alt=""&gt;&lt;/img&gt;
+{{/SEC}}{{#INC=SERVICE_WORKER}}{{#FILE=versioned_data/dev/templates/elements/common/service_worker_post20150609.tpl}}{{#SEC=__{{MAIN}}__}}{{/SEC}}{{/FILE}}{{/INC}}{{#INC=AD_PRESENT}}{{#FILE=versioned_data/dev/templates/elements/js_utils/ad_present_post.tpl}}{{#SEC=__{{MAIN}}__}}&lt;script&gt;
+  if (window.top &amp;&amp; window.top.postMessage) {
+    
+        window.top.postMessage('{"googMsgType":"adpnt"}','*');
+  }
+&lt;/script&gt;
+{{/SEC}}{{/FILE}}{{/INC}}{{#INC=GLADE_METADATA}}{{#FILE=versioned_data/dev/templates/elements/js_utils/glade_metadata_post.tpl}}{{#SEC=__{{MAIN}}__}}{{/SEC}}{{/FILE}}{{/INC}}{{#SEC=CREATIVE_METADATA_SECTION}}&lt;div style="display:none" data-google-query-id="{{#VAR=ESCAPED_BACKEND_QUERY_ID}}CLvonMyatd0CFYm_dwodRaYLvA{{/VAR}}"&gt;&lt;/div&gt;
+{{/SEC}}{{#INC=WATERMARKING}}{{#FILE=versioned_data/dev/templates/elements/common/watermarking_post.tpl}}{{#SEC=__{{MAIN}}__}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{#INC=JS_UTILS_FOOTER}}{{#FILE=versioned_data/dev/templates/elements/js_utils/js_utils_footer_post20120603.tpl}}{{#SEC=__{{MAIN}}__}}{{/SEC}}{{/FILE}}{{/INC}}{{#SEC=HYDRA_INTEGRATION_SECTION}}      &lt;script&gt;
+        adSlot.finalize('ads');
+      &lt;/script&gt;
+{{/SEC}}     
+    {{#SEC=FIRST_IFRAME_ONLY}}      
+{{/SEC}}  &lt;/body&gt;
+&lt;/html&gt;
+{{/SEC}}{{/FILE}}</pre></div><p></p><p>Rendering Server rlog (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ad&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ad&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_ad&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_ad" class="rendering-server-rlog" style="display:none;"><pre>I0912 10:53:02.971953  828081 proto-capture-producer.cc:33] rpc_id=9878584615112566589 ReqId=0: START: ProtoCaptureProducer::OnStart()
+I0912 10:53:02.971989  828081 bow-logging.cc:22] ReqId=0: START: ProtoCaptureProducer::ScheduleNextState()
+I0912 10:53:02.972111  828081 bow-logging.cc:28] ReqId=0: END: ProtoCaptureProducer::ScheduleNextState()
+I0912 10:53:02.972117  828081 proto-capture-producer.cc:43] rpc_id=9878584615112566589 ReqId=0: END: ProtoCaptureProducer::OnStart()
+I0912 10:53:02.972979  828081 parse-rendering-request-producer.cc:139] rpc_id=9878584615112566589 START: ParseRenderingRequestProducer::OnRun()
+I0912 10:53:02.974882  828081 parse-rendering-request-producer.cc:141] rpc_id=9878584615112566589 END: ParseRenderingRequestProducer::OnRun()
+I0912 10:53:02.974955  828081 experiment-state-producer.cc:274] rpc_id=9878584615112566589 START: ExperimentStateProducer::OnRun()
+I0912 10:53:02.978749  828081 experiment-state-producer.cc:317] rpc_id=9878584615112566589 ExperimentStateProducer: use Rendering Server FlagSettings.
+I0912 10:53:02.978780  828081 experiment-state-producer.cc:327] rpc_id=9878584615112566589 END: ExperimentStateProducer::OnRun()
+I0912 10:53:02.978882  828081 mlt-lookup-producer.cc:237] rpc_id=9878584615112566589 START: MltLookupProducer::OnRun()
+I0912 10:53:02.978905  828081 mlt-lookup-producer.cc:263] rpc_id=9878584615112566589 END: MltLookupProducer::OnRun()
+I0912 10:53:02.978921  828081 build-rendering-creative-vector-producer.cc:68] rpc_id=9878584615112566589 START: BuildRenderingCreativeVectorProducer-0 OnRun()
+I0912 10:53:02.979906  828081 creative_conversion_extension_point_util.cc:86] rpc_id=9878584615112566589 ConvertToRenderingCreative with contentads::bow::rendering::TextAdCreativeConversionExtension
+I0912 10:53:02.995463  828081 extension-stats-rlog-writer.h:51] Extension Point: contentads::bow::rendering::gdn::ConversionExtensionPoint, Name: TextAdCreativeConversionExtension, Body Cycles: 12755405, Body Time (usec): 12.75435925ms
+I0912 10:53:02.995850  828081 build-rendering-creative-vector-producer.cc:165] rpc_id=9878584615112566589 END: BuildRenderingCreativeVectorProducer-0 OnRun()
+I0912 10:53:02.995907  828081 build-rendering-result-producer.cc:101] rpc_id=9878584615112566589 START: BuildRenderingResultProducer-0::OnRun()
+I0912 10:53:02.995916  828081 build-rendering-result-producer.cc:115] rpc_id=9878584615112566589 Language for msg catalog = sr
+I0912 10:53:02.996060  828081 builder_extension_point.cc:120] rpc_id=9878584615112566589 (@gri-eng) CreateBuilder with contentads::bow::rendering::text_ads::TextAdsBuilderExtension
+I0912 10:53:02.998581  828081 asa-layout-engine-impl.cc:1183] rpc_id=9878584615112566589 Starts AsaLayoutEngineImpl::FillLayoutRenderingInfo (rhindle text-ad optimization)
+I0912 10:53:03.126547  828081 asa-layout-engine-impl.cc:1219] rpc_id=9878584615112566589 Using textual layout RHINDLE_MAGNETO_SMALL_NO_BODY, layout mode VERTICAL_MODE
+I0912 10:53:03.167860  828081 text_ads_builder_extension.cc:97] rpc_id=9878584615112566589 (gri-eng@) TextAdsBuilder was created.
+I0912 10:53:03.167899  828081 build-rendering-result-producer.cc:160] rpc_id=9878584615112566589 (gri-eng@) Create PageElement by GRI framework
+I0912 10:53:03.170716  828081 builder.h:37] rpc_id=9878584615112566589 (@gri-eng) Create page element of type contentads::bow::rendering::text_ad_new::RootElement by contentads::bow::rendering::text_ads::TextAdsBuilder
+I0912 10:53:03.170816  828081 build-rendering-result-producer.cc:253] rpc_id=9878584615112566589 END: BuildRenderingResultProducer-0::OnRun()
+I0912 10:53:03.170884  828081 expand-page-element-producer.cc:42] rpc_id=9878584615112566589 START: ExpandPageElementProducer-0::OnRun()
+I0912 10:53:03.185946  828081 render-page-element-util.cc:109] rpc_id=9878584615112566589 Render success = true
+I0912 10:53:03.207317  828081 expand-page-element-producer.cc:85] rpc_id=9878584615112566589 END: ExpandPageElementProducer-0::OnRun()
+I0912 10:53:03.207560  828081 render-afc-sra-response-producer.cc:84] rpc_id=9878584615112566589 START: RenderAfcSraResponseProducer::OnRun()
+I0912 10:53:03.207595  828081 assemble-rendering-response-producer.cc:138] rpc_id=9878584615112566589 START: AssembleRenderingResponseProducer::OnRun()
+</pre></div><p></p><p>Enabled Debug Messages (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ae&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ae&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_ae&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_ae" class="enabled-debug-messages" style="display:none;">title: Rendering Conversion Extension, component: rendering/rce, level: 1<br>title: Rendering Conversion Extension ( 1 / 66 extensions selected. ), component: rendering/rce, level: 1<br>title: Rendering Creative Vector ( BuildRenderingCreativeVectorProducer-0 ), component: rendering/rcv, level: 1<br>title: Rendering Creative Vector Proto Form ( BuildRenderingCreativeVectorProducer-0 ), component: rendering/rcvproto, level: 1<br>title: Layout Rendering Infos, component: rendering/lri, level: 1<br>title: Rendering Builder ( BuildRenderingResultProducer-0 ), component: rendering/builder, level: 1<br>title: Rendering Template ( ExpandPageElementProducer-0 ), component: rendering/t, level: 1<br>title: Rendering Server rlog, component: rendering/rlog, level: 1<br></div><p></p></body></html>
