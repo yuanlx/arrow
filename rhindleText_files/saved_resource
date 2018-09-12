@@ -1,0 +1,93 @@
+<html>
+  <head>
+  <title>gqui</title>
+  <link href="resource/opensearch.xml" rel="search" title="Gqui"
+        type="application/opensearchdescription+xml">
+
+  
+    <script src="/resource/interactive_compiled.js"></script>
+    <link href="/resource/interactive.css" rel="stylesheet" type="text/css">
+    <link href="/resource/dark-theme.css" id="themestyle" rel="stylesheet" type="text/css">
+  
+
+  <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-43966124-1', 'google.com');
+ga('send', 'pageview');
+  </script>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <div><button id="button_toggle_sidebar" longtext="Toggle expanded sidebar" shorttext="&#10148;">&#10148;</button></div>
+
+      <div class="sidebar_separator">&nbsp;</div>
+
+      <div><button class="expand_button" id="button_expand_none" longtext="Collapse all messages" shorttext="{…}">{…}</button></div>
+      <div><button class="expand_button" id="button_expand_1" longtext="Show top-level fields" shorttext="{.1.}">{.1.}</button></div>
+      <div><button class="expand_button" id="button_expand_2" longtext="Show fields in first 2 levels" shorttext="{.2.}">{.2.}</button></div>
+      <div><button class="expand_button" id="button_expand_all" longtext="Expand all messages" shorttext="{&#8596;}">{&#8596;}</button></div>
+
+      <div class="sidebar_separator">&nbsp;</div>
+
+      <div><button id="button_switch_theme" longtext="Switch theme" shorttext="A">A</button></div>
+
+      <div class="sidebar_separator">&nbsp;</div>
+
+      <div><button id="button_help" longtext="gqui documentation" shorttext="?">?</button></div>
+
+      <div class="sidebar_separator">&nbsp;</div>
+    </div>
+
+    <div id="main_column">
+      
+      <div id="command"><span id="prompt">$ </span><span id="in_whole" contentEditable="true" spellcheck="false"></span></div>
+
+      <div id="status" class="status"></div>
+
+      <div><button id="cancel_button" class="hidden">Cancel</button></div>
+
+      <div id="msg" class="msg"></div>
+
+      <div id="results"></div>
+
+      <div id="footer" class="status"></div>
+
+      <div id="help" style="display:none">
+
+        
+        Please enter a query in the box above, and hit enter to run it.
+        <p>
+        The gqui language is SQL-like, but only the "from" clause is required.
+        <p>
+        The basic query structure is "from <i>/path/to/file</i> proto <i>MyProto</i>" (<a href="/?q=from%20%2Fx20%2Fprojects%2Fgqui%2Fexamples%2Fdocproperties%20proto%20DocProperties">example</a>, <a href="http://goto.google.com/gqui">tutorial</a>)
+        <p>
+        Some common operations:
+        <ul>
+        <li>Use tab-completion to help with keywords, field names, etc. (just try it above!)
+
+        <li>Limit the number of records with "limit". (<a href="/?q=from%20%2Fx20%2Fprojects%2Fgqui%2Fexamples%2Fdocproperties%20proto%20DocProperties%20limit%201">example</a>, <a href="http://goto.google.com/gqui/output#TOC-Limit-and-offset">docs</a>)
+
+        <li>Extract one or more fields with "select". (<a href="/?q=from%20%2Fx20%2Fprojects%2Fgqui%2Fexamples%2Fdocproperties%20proto%20DocProperties%20select%20title%2C%20num_tokens">example</a>, <a href="http://goto.google.com/gqui/output#TOC-Select-and-Format">docs</a>)
+
+        <li>Filter records with "where". (<a href="/?q=from%20%2Fx20%2Fprojects%2Fgqui%2Fexamples%2Fdocproperties%20proto%20DocProperties%20where%20BadTitleInfo%5B0%5D.type%20%3D%20UNREADABLE">example</a>, <a href="http://goto.google.com/gqui/query">expression docs</a>)
+
+        <li>Use gqui's "special" fields. (<a href="/?q=from%20%2Fx20%2Fprojects%2Fgqui%2Fexamples%2Fdocproperties%20proto%20DocProperties%20select%20key_%2C%20restricts.size_">example with key_ and size_</a>, <a href="http://goto.google.com/gqui/query#TOC-Special-fields">docs</a>)
+
+        <li>Use expressions and functions to transform data. (<a href="/?q=from%20%2Fx20%2Fprojects%2Fgqui%2Fexamples%2Fdocproperties%20proto%20DocProperties%20select%20webtable.KeyToURL(key_)%20as%20URL%2C%20num_tokens%20%3E%20500%20%3F%20'large'%20%3A%20'small'%20as%20size">example</a>, <a href="http://goto.google.com/gqui/query">expression docs</a>, <a href="http://goto.google.com/gqui/query/functions">list of functions</a>)
+
+        </ul>
+        <p>
+        See <a href="http://goto.google.com/gqui">http://go/gqui</a> for the full gqui documentation, starting with a tutorial.
+        <br>
+        There's a lot more functionality than fits in this brief introduction!
+        <p>
+        Discuss gqui on <a href="https://groups.google.com/a/google.com/forum/#!forum/gqui-users">gqui-users@google.com</a>.
+      </div>
+    </div>
+  </body>
+</html>

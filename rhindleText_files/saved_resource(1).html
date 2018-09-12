@@ -1,3 +1,1495 @@
-<!DOCTYPE html>
-<!-- saved from url=(0172)http://googleads.g.doubleclick.net/pagead/ads?prodhost=googleads.g.doubleclick.net&client=ca-pub-8963598323948591&url=www.elkhadra.com&ad_type=text&ctypes=1&format=300x250& -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script type="text/javascript" src="./ftF6NuUKtCXPWUkp48NVxBIqnxw03PXNO9Z6_mb1DkU.js"></script></head><body></body></html>
+
+<!-- saved from url=(0012)about:srcdoc -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>CAT2 Debug Output</title>
+<style>
+  .prewrap {
+    white-space: pre-wrap;       /* css-3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  }
+  /* For title of section that contains many sub-sections. */
+  .aggregated-sections-header {
+    font-weight:bold;
+  }
+  /* For contents of section that contains many sub-sections. */
+  .aggregated-sections-body {
+    margin-left: 75px;
+  }
+  /* For error messages. */
+  .error {
+    color:ff0000;
+    font-weight:bold;
+  }
+  table.scoredeb td {
+    padding-left: 5px;
+    padding-right: 10px;
+  }
+  table.scoredeb .title {
+    background:#4F7EFF;
+    color:white;
+    font-weight:bold;
+  }
+  table.scoredeb .sec {
+    background:#DFE8FF;
+    font-weight:bold;
+  }
+  table.scoredeb .subsec .name {
+    padding-left:1.5em;
+  }
+  table.scoredeb .num {
+    text-align:right;
+  }
+  table.scoredeb .desc {
+    font-weight:normal;
+  }
+  iframe.graphframe {
+    border: 1px solid black;
+  }
+</style>
+<script language="javascript" type="text/javascript">
+  window.onload = function() {
+    window.addEventListener('message', receiveMessage, false);
+  }
+
+  var groupLevelGraphUrls = {};
+
+  // The graphviz server sends js messages to this page when a graph has
+  // finished loading or when nodes are clicked. This is the responder function.
+  function receiveMessage(event) {
+    var graphvizServerDomain = 'https://graphviz.corp.google.com';
+    // Only respond to messages from the graphviz server
+    if (event.origin != graphvizServerDomain) {
+      return;
+    }
+    var currentLine = event.data.split(' ');
+    // Interested in event data with the following form:
+    // "PublisherIdentityGraphHandler url https://graphviz.corp.google.com/..."
+    if (currentLine.length == 3 && currentLine[1] == 'url') {
+      var iframeId = currentLine[0];
+      var graphUrl = currentLine[2];
+
+      // Group graph frame names are formatted "GROUP@graphname@groupname"
+      // Place the group graph's url in the grouplevelGraphs structure.
+      if (iframeId.indexOf("GROUP@") == 0) {
+        var fullGroupName = iframeId.split('@');
+        if (fullGroupName.length < 3) return;
+        var graphName = fullGroupName[1];
+        var groupName = fullGroupName[2];
+        if (!(graphName in groupLevelGraphUrls)) {
+          groupLevelGraphUrls[graphName] = {};
+        }
+        groupLevelGraphUrls[graphName][groupName] = graphUrl;
+        return;
+      } else {
+        // Normal top-level graph. Add link and window.
+        var iframe = document.getElementById(iframeId);
+        if (!iframe) return;
+        var iframeParent = GetParentNode(iframe);
+        if (!iframeParent) return;
+
+        // Add div containing an <a> link to the graph. Place below iframe.
+        var linkDiv = document.createElement('div');
+        var linkUnderGraph = '<a target="_blank" href=\"' + graphUrl
+            + '\">Link to graph</a>';
+        linkDiv.innerHTML = linkUnderGraph;
+        iframeParent.appendChild(linkDiv);
+
+        // Add class to iframe for the purpose of graph-specific styling
+        iframe.className += ' graphframe';
+        return;
+      }
+    }
+    // Response to a group node being clicked in a graph.
+    // Message format: "click@graphname@groupname" (seperated by @ sign).
+    var dashLine = event.data.split('@');
+    if (dashLine.length == 3 && dashLine[0] == 'click') {
+      // Group node was clicked. Open group graph.
+      var graphName = dashLine[1];
+      var groupName = dashLine[2];
+      if (!(graphName in groupLevelGraphUrls)) return;
+      var possibleGroups = groupLevelGraphUrls[graphName];
+      if (!(groupName in possibleGroups)) return;
+      var groupGraphUrl = possibleGroups[groupName];
+      // Open the url of the group-level graph.
+      window.open(groupGraphUrl);
+    }
+  }
+  function selectalltext(name) {
+    var text = document.getElementById(name);
+    if (document.body.createTextRange) {
+        var range = document.body.createTextRange();
+        range.moveToElementText(text);
+        range.select();
+    } else if (window.getSelection) {
+        var selection = window.getSelection();
+        var range = document.createRange();
+        range.selectNodeContents(text);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+  }
+  function displaydiv(name, show) {
+    var div = document.getElementById(name);
+    if (div) {
+      div.style.display = (show) ? 'block' : 'none';
+    }
+  }
+  function displaydiv_image(name, img_href) {
+    var myimage = document.getElementById('img_' + name);
+    if (myimage) {
+      myimage.src = img_href;
+    }
+    displaydiv(name, true);
+  }
+  function GetParentNode(n) {
+    try {
+      return n.parentNode;
+    } catch (e) {
+      return null;
+    }
+  }
+  function GotoAnchor(name) {
+    var node = document.getElementById('anchor_' + name);
+    while (node != null) {
+      if (node.tagName == 'DIV') {
+        node.style.display = 'block';
+      }
+      node = GetParentNode(node);
+    }
+    window.location.hash=name;
+  }
+</script>
+<script language="javascript" type="text/javascript" src="https://graphviz.corp.google.com/js"></script>
+</head><body marginwidth="0" marginheight="0">
+<p>Rendering Conversion Extension (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_b8&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_b8&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_b8&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_b8" class="rendering-conversion-extension" style="display:none;">contentads::bow::rendering::TextAdCreativeConversionExtension</div><p></p><p>Rendering Conversion Extension ( 1 / 66 extensions selected. ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_b9&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_b9&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_b9&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_b9" class="rendering-conversion-extension-1-66-extensions-selected" style="display:none;"><table border="1"><tbody><tr><th>Extension Name</th><th>Status Code</th><th>Status Message</th></tr>
+<tr><td>VmapCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>XmlImageAdsCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>XmlTextAdsCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>JsTrackedAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>JsImageAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>JsTextAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>JsTextTemplateAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>AwbidAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>WapImageAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>XfpImageAdsCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>DtvAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>MysidiaIdeasAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>MysidiaCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>LocationAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>MysidiaLocalProductAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>LocalProductAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>Html5SwiffyAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>Html5TemplateAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ShoppingAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>ProtoTemplateAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ImageSearchAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>MysidiaScreamAdConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ScreamAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ImageTemplateAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>CtdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ImageCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>SdkMediationAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>ImageAdsCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>RichMediaAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>GfpRawRichMediaAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking predicate</td></tr>
+<tr><td>PreviewInredCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>BoostAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>GpaCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>ScreamTextAdCreativeConversionExtension</td><td>failed_precondition</td><td>Extension not applicable after checking auxiliary inputs</td></tr>
+<tr><td>TextAdCreativeConversionExtension</td><td>OK</td><td></td></tr>
+<tr><td>RootAnimatedTextAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XfpHtml5AdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>GfpNativeAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>GfpRichMediaAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>GoogleRenderedNativeAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>PyvCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>PyvStudioAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>BuyerSdkRenderedAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XbidAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>OutstreamVideoNativeAdNaturalizedCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>OutstreamVideoHtmlAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>SurveyHtmlCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>Html5StudioTemplateTetrisAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>Html5StudioTemplateSurveyAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>Html5StudioTemplateCommonAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XfaHtmlAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XfaImageAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>StudioAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>XfaTrackingAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>NativeAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>GoogleRenderedRtbNativeCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>RadlinkCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>NativeTemplateCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>AppCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>AppPromoVideoAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>ImageTemplateCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>TextCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>Html5TemplateAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>AppPromoHtml5TemplateAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>AppPromoProtoTemplateAdCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+<tr><td>FallbackCreativeConversionExtension</td><td>aborted</td><td>Extension not created</td></tr>
+</tbody></table>
+</div><p></p><p>Rendering Creative Vector ( BuildRenderingCreativeVectorProducer-0 ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ba&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_ba&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_ba&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_ba" class="rendering-creative-vector-buildrenderingcreativevectorproducer-0" style="display:none;"><pre>===========block index:0=============
+------creative index:0------------
+-creative type:2
+text_ad_data {
+  title: "Work in Kidderminster"
+  body_line1: "Jobs in Kidderminster Full Time or Part Time. No experience required."
+  is_rtl: false
+  visible_url_or_brand: "sercanto.co.uk"
+  image_url_data {
+  }
+  site_links {
+  }
+  type: REGULAR_TEXT_AD
+  destination_url: "http://www.sercanto.co.uk/ads/search.php?qu=job&amp;w=Kidderminster&amp;promo=1&amp;all=1"
+  redirect_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;num=1&amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;client=ca-pub-7200731081367426&amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1"
+  view_url: "https://securepubads.g.doubleclick.net/pagead/adview?ai=CUPvJxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBP4CT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-MAEvc3m49MB4AQBiAWnvpTEBZIFBAgEGAGSBQQIBRgE2AYCgAerhtZfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhuoB-nNG9gHAfIHBRDEq7wBoAj2uT2wCALSCAkIgOGAEBABGAGACgPYEwyCFCMaITQ4NTg1ZjBlMTI2YTc4NzIuYW5vbnltb3VzLmdvb2dsZQ&amp;sigh=55-KMLW6eJk&amp;tpd=AGWhJmuNgDwbnuL0T9n5ub7_UbIzeCc48-0Jd9DDAfi669S-Kw"
+  tracking_ad_data {
+    should_use_image_tracking_click: false
+  }
+  close_button_data {
+    show_close_button: true
+    close_button_token: "scuzNWObsWEIsovmk-0HEKe-lMQFGKqY9F8iDnNlcmNhbnRvLmNvLnVrMggIBRMY3K4OFEIXY2EtcHViLTcyMDA3MzEwODEzNjc0MjZIAFgBcAE"
+    why_this_ad_token: "AB3afGEAAAFaW1tbW251bGwsWzEzXV0sW251bGwsbnVsbCxbbnVsbCxudWxsLG51bGwsImh0dHBzOi8vZGlzcGxheWFkcy1mb3JtYXRzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hZHMvcHJldmlldy9jb250ZW50LmpzP2NsaWVudD13dGFcdTAwMjZvYmZ1c2NhdGVkQ3VzdG9tZXJJZD03NDMyODkwMjAyXHUwMDI2Y3JlYXRpdmVJZD0yODM5ODYwNjc2NjVcdTAwMjZ2ZXJzaW9uSWQ9MFx1MDAyNmFkR3JvdXBDcmVhdGl2ZUlkPTI2OTgxOTE1MTc5NFx1MDAyNmh0bWxQYXJlbnRJZD1wcmV2LTBcdTAwMjZoZWlnaHQ9MFx1MDAyNndpZHRoPTBcdTAwMjZzaWc9QUNpVkJfeWFOLWYybUlTcHNJSmt1ZXBLQTcxTEFtdXRlQSJdXV1dXTTG5yWhya7o937YyIDJmZZN7n4Iw257c3ekXFdmu1_YXKI6nVuMmSIucVlIJ-YYHIHnkXMJJRm22C2tgIk7r7GkUmYPLBsDnQuVKuUfdhq8Xd2bP2SnhLuvdBxSFv2IV8QaFPLMQ_0RczzYTkVaYxuP7CC9G2L6GcEmtK6IwNJr6-RkzBkbqG47NtywXfB1CsZkKhqYbXE7t9m_qCh4u9MAmhWYtZe9gZHZQjn37o0Q8ddKnQ9Rd28jcXqKE0EgxilG4N3sx75oz5fF9j6myQp0ivpDwK4GQSoJtop2u_BNFGhBgCL2NLfcVQd2Fjn7kU8-EOtx-Y0xLVtK1O1RS0o,J1WZVjjobG5-ztn_aKEtTA"
+    mute_menu_options {
+      id: DONT_LIKE_CONTENT_OF_THIS_AD
+      mute_survey_options {
+        id: AD_COVERING_PAGE_CONTENT
+      }
+      mute_survey_options {
+        id: UNINTERESTING_AD
+      }
+      mute_survey_options {
+        id: REPETITIVE_AD
+      }
+      mute_survey_options {
+        id: INAPPROPRIATE_AD
+      }
+      mute_survey_type: MULTIPLE_CHOICE_SURVEY
+    }
+    why_this_ad_on_idfe: true
+    why_this_ad {
+      targeting_reasons {
+        ad_reason: CUBAQ
+        explanation {
+          introduction: "This is a list of the information sources used to determine that this ad be shown to you:"
+          item {
+            description: "Websites you\'ve visited"
+          }
+        }
+      }
+      preview_url: "https://displayads-formats.googleusercontent.com/ads/preview/content.js?client=wta&amp;obfuscatedCustomerId=7432890202&amp;creativeId=283986067665&amp;versionId=0&amp;adGroupCreativeId=269819151794&amp;htmlParentId=prev-0&amp;height=0&amp;width=0&amp;sig=ACiVB_yaN-f2mISpsIJkuepKA71LAmuteA"
+    }
+  }
+  creative_conversion_url_without_label: "https://googleads.g.doubleclick.net/pagead/conversion/?ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;sigh=yqcyDPj4JDw"
+  ad_language: "en"
+  adgroup_creative_id: 269819151794
+  u2_final_url: "http://www.sercanto.co.uk/ads/search.php?qu=job&amp;w=Kidderminster&amp;promo=1&amp;all=1"
+  advertiser: ""
+  title_line1: "Work in Kidderminster"
+  long_title: "Work in Kidderminster"
+  title_line2: ""
+  is_dra_creative: false
+  is_eta_creative: false
+}
+-common data:
+common_urls {
+  redirect_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;num=1&amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;client=ca-pub-7200731081367426&amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1"
+  visible_url: "sercanto.co.uk"
+  link_description_text: "sercanto.co.uk"
+}
+event_urls {
+  click_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;num=1&amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;client=ca-pub-7200731081367426&amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1"
+  view_url: "https://securepubads.g.doubleclick.net/pagead/adview?ai=CUPvJxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBP4CT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-MAEvc3m49MB4AQBiAWnvpTEBZIFBAgEGAGSBQQIBRgE2AYCgAerhtZfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhuoB-nNG9gHAfIHBRDEq7wBoAj2uT2wCALSCAkIgOGAEBABGAGACgPYEwyCFCMaITQ4NTg1ZjBlMTI2YTc4NzIuYW5vbnltb3VzLmdvb2dsZQ&amp;sigh=55-KMLW6eJk&amp;tpd=AGWhJmuNgDwbnuL0T9n5ub7_UbIzeCc48-0Jd9DDAfi669S-Kw"
+}
+creative_setting {
+  is_amp_dest_url: false
+}
+creative_type: 1
+
+</pre></div><p></p><p>Rendering Creative Vector Proto Form ( BuildRenderingCreativeVectorProducer-0 ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_bb&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_bb&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_bb&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_bb" class="rendering-creative-vector-proto-form-buildrenderingcreativevectorproducer-0" style="display:none;"><pre>creative {
+  data {
+    type_url: "type.googleapis.com/contentads.bow.rendering.OnePartialSlotData"
+    value: "\n\277$\n\025Work in Kidderminster\022EJobs in Kidderminster Full Time or Part Time. No experience required. \000:\016sercanto.co.ukB\000j\000x\000\202\001Mhttp://www.sercanto.co.uk/ads/search.php?qu=job&amp;w=Kidderminster&amp;promo=1&amp;all=1\212\001\271\010https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;num=1&amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;client=ca-pub-7200731081367426&amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1\222\001\277\007https://securepubads.g.doubleclick.net/pagead/adview?ai=CUPvJxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBP4CT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-MAEvc3m49MB4AQBiAWnvpTEBZIFBAgEGAGSBQQIBRgE2AYCgAerhtZfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhuoB-nNG9gHAfIHBRDEq7wBoAj2uT2wCALSCAkIgOGAEBABGAGACgPYEwyCFCMaITQ4NTg1ZjBlMTI2YTc4NzIuYW5vbnltb3VzLmdvb2dsZQ&amp;sigh=55-KMLW6eJk&amp;tpd=AGWhJmuNgDwbnuL0T9n5ub7_UbIzeCc48-0Jd9DDAfi669S-Kw\262\001\002\010\000\272\001\327\n\010\001\022oscuzNWObsWEIsovmk-0HEKe-lMQFGKqY9F8iDnNlcmNhbnRvLmNvLnVrMggIBRMY3K4OFEIXY2EtcHViLTcyMDA3MzEwODEzNjc0MjZIAFgBcAE\032\306\006AB3afGEAAAFaW1tbW251bGwsWzEzXV0sW251bGwsbnVsbCxbbnVsbCxudWxsLG51bGwsImh0dHBzOi8vZGlzcGxheWFkcy1mb3JtYXRzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hZHMvcHJldmlldy9jb250ZW50LmpzP2NsaWVudD13dGFcdTAwMjZvYmZ1c2NhdGVkQ3VzdG9tZXJJZD03NDMyODkwMjAyXHUwMDI2Y3JlYXRpdmVJZD0yODM5ODYwNjc2NjVcdTAwMjZ2ZXJzaW9uSWQ9MFx1MDAyNmFkR3JvdXBDcmVhdGl2ZUlkPTI2OTgxOTE1MTc5NFx1MDAyNmh0bWxQYXJlbnRJZD1wcmV2LTBcdTAwMjZoZWlnaHQ9MFx1MDAyNndpZHRoPTBcdTAwMjZzaWc9QUNpVkJfeWFOLWYybUlTcHNJSmt1ZXBLQTcxTEFtdXRlQSJdXV1dXTTG5yWhya7o937YyIDJmZZN7n4Iw257c3ekXFdmu1_YXKI6nVuMmSIucVlIJ-YYHIHnkXMJJRm22C2tgIk7r7GkUmYPLBsDnQuVKuUfdhq8Xd2bP2SnhLuvdBxSFv2IV8QaFPLMQ_0RczzYTkVaYxuP7CC9G2L6GcEmtK6IwNJr6-RkzBkbqG47NtywXfB1CsZkKhqYbXE7t9m_qCh4u9MAmhWYtZe9gZHZQjn37o0Q8ddKnQ9Rd28jcXqKE0EgxilG4N3sx75oz5fF9j6myQp0ivpDwK4GQSoJtop2u_BNFGhBgCL2NLfcVQd2Fjn7kU8-EOtx-Y0xLVtK1O1RS0o,J1WZVjjobG5-ztn_aKEtTA\"\024\010\001\022\002\010\003\022\002\010\007\022\002\010\002\022\002\010\010\030\001(\0012\200\003*z\020\rBv\nYThis is a list of the information sources used to determine that this ad be shown to you:\022\031\n\027Websites you\'ve visited:\201\002https://displayads-formats.googleusercontent.com/ads/preview/content.js?client=wta&amp;obfuscatedCustomerId=7432890202&amp;creativeId=283986067665&amp;versionId=0&amp;adGroupCreativeId=269819151794&amp;htmlParentId=prev-0&amp;height=0&amp;width=0&amp;sig=ACiVB_yaN-f2mISpsIJkuepKA71LAmuteA\302\001\374\006https://googleads.g.doubleclick.net/pagead/conversion/?ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;sigh=yqcyDPj4JDw\352\001\002en\260\002\262\213\346\223\355\007\202\003Mhttp://www.sercanto.co.uk/ads/search.php?qu=job&amp;w=Kidderminster&amp;promo=1&amp;all=1\312\003\000\232\004\025Work in Kidderminster\242\004\025Work in Kidderminster\312\004\000\320\004\000\330\004\000"
+  }
+  common_data {
+    common_urls {
+      redirect_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;num=1&amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;client=ca-pub-7200731081367426&amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1"
+      visible_url: "sercanto.co.uk"
+      link_description_text: "sercanto.co.uk"
+    }
+    event_urls {
+      click_url: "https://www.googleadservices.com/pagead/aclk?sa=L&amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;num=1&amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;client=ca-pub-7200731081367426&amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1"
+      view_url: "https://securepubads.g.doubleclick.net/pagead/adview?ai=CUPvJxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBP4CT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-MAEvc3m49MB4AQBiAWnvpTEBZIFBAgEGAGSBQQIBRgE2AYCgAerhtZfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhuoB-nNG9gHAfIHBRDEq7wBoAj2uT2wCALSCAkIgOGAEBABGAGACgPYEwyCFCMaITQ4NTg1ZjBlMTI2YTc4NzIuYW5vbnltb3VzLmdvb2dsZQ&amp;sigh=55-KMLW6eJk&amp;tpd=AGWhJmuNgDwbnuL0T9n5ub7_UbIzeCc48-0Jd9DDAfi669S-Kw"
+    }
+    creative_setting {
+      is_amp_dest_url: false
+    }
+    creative_type: 1
+  }
+}
+</pre></div><p></p><p>Layout Rendering Infos (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_bc&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_bc&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_bc&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_bc" class="layout-rendering-infos" style="display:none;"><pre>layout_rendering_info {
+  textual_layout: RHINDLE_STEWIE_KISS_SQUARE
+  asa_language: EN
+  chrome_ui_spec {
+    ad_slot_width: 300
+    ad_slot_height: 250
+    ads_left: 1
+    ads_top: 1
+    ads_width: 298
+    ads_height: 248
+    border_thickness: 0
+    chrome_bottom_height: 1
+    chrome_top_height: 1
+    chrome_left_width: 1
+    chrome_right_width: 1
+    ads_allocated_width: 298
+    ads_allocated_height: 248
+    max_ads_bottom_truncation: 0
+    outer_ad_slot_width: 0
+    outer_ad_slot_height: 0
+  }
+  add_separator_between_ads: true
+  nessie_button_position: BOTTOM
+  creative_rendering_info {
+    width: 298
+    height: 248
+    score: 147.65625
+    expand_level: 0.8671875
+    language: EN
+    collapsed_height: 0
+    collapsed_score: 0
+    collapsed_expand_level: 0.8671875
+    layout {
+      root_box {
+        type: VERTICAL_FLOW_BOX
+        range_message {
+        }
+        computed_message {
+          is_disabled: false
+          outer_width: 298
+          outer_height: 248
+          content_width: 298
+          content_height: 248
+          x: 0
+          y: 0
+          padding_left: 0
+          padding_right: 0
+          padding_top: 0
+          padding_bottom: 0
+        }
+        children {
+          type: VERTICAL_FLOW_BOX
+          range_message {
+            padding_left {
+              level: 0.5
+              expression_value {
+                type: AD_UNIT_WIDTH
+                multiplicative_factor: 0.06
+                constant: 0
+              }
+            }
+            padding_right {
+              level: 0.5
+              expression_value {
+                type: AD_UNIT_WIDTH
+                multiplicative_factor: 0.06
+                constant: 0
+              }
+            }
+            padding_bottom {
+              level: 0
+              level: 1
+              expression_value {
+                type: AD_UNIT_HEIGHT
+                multiplicative_factor: 0.06
+                constant: 0
+              }
+              expression_value {
+                type: AD_UNIT_HEIGHT
+                multiplicative_factor: 0.1
+                constant: 0
+              }
+            }
+            padding_top {
+              level: 0
+              level: 1
+              expression_value {
+                type: AD_UNIT_HEIGHT
+                multiplicative_factor: 0.06
+                constant: 0
+              }
+              expression_value {
+                type: AD_UNIT_HEIGHT
+                multiplicative_factor: 0.1
+                constant: 0
+              }
+            }
+          }
+          computed_message {
+            is_disabled: false
+            outer_width: 298
+            outer_height: 196
+            content_width: 262
+            content_height: 148
+            x: 0
+            y: 0
+            padding_left: 18
+            padding_right: 18
+            padding_top: 24
+            padding_bottom: 24
+          }
+          children {
+            type: TITLE_BOX
+            range_message {
+              padding_left {
+                level: 0.5
+                value: 0
+              }
+              padding_right {
+                level: 0.5
+                value: 0
+              }
+              padding_bottom {
+                level: 0
+                level: 1
+                value: 2
+                value: 10
+              }
+              padding_top {
+                level: 0
+                level: 1
+                value: 2
+                value: 10
+              }
+              font_size {
+                level: 0
+                level: 1
+                value: 12
+                value: 32
+              }
+            }
+            computed_message {
+              is_disabled: false
+              outer_width: 262
+              outer_height: 88
+              content_width: 262
+              content_height: 70
+              x: 18
+              y: 24
+              padding_left: 0
+              padding_right: 0
+              padding_top: 9
+              padding_bottom: 9
+              font_size: 29
+              font_color: "#37474f"
+              font_rendering_spec {
+                font_family: ROBOTO_LIGHT
+                font_weight: MEDIUM
+                font_weight_value: 500
+                font_family_css: "\"Roboto\",arial,sans-serif"
+                web_font_names: "Roboto"
+              }
+              content_lines: "Work in "
+              content_lines: "Kidderminster"
+            }
+            css_class: "rh-title"
+            vertical_rendering_mode: FLOW
+            horizontal_rendering_mode: FLOW_MAX
+            rendering_type: TEXT_AD_TITLE_ELEMENT
+            elasticity: 1
+            collapsed_box: true
+            font_weight: MEDIUM
+            line_height: 1.2
+            font_color {
+              source: TITLE_COLOR
+            }
+            force_linebreaks: true
+          }
+          children {
+            type: EMPTY_BOX
+            range_message {
+              min_content_width {
+                level: 0.5
+                value: 0
+              }
+              min_content_height {
+                level: 0.5
+                value: 0
+              }
+            }
+            computed_message {
+              is_disabled: false
+              outer_width: 262
+              outer_height: 0
+              content_width: 262
+              content_height: 0
+              x: 18
+              y: 112
+              padding_left: 0
+              padding_right: 0
+              padding_top: 0
+              padding_bottom: 0
+            }
+            vertical_rendering_mode: FIXED
+            horizontal_rendering_mode: FLOW
+            elasticity: 1
+          }
+          children {
+            type: HORIZONTAL_FLOW_BOX
+            range_message {
+            }
+            computed_message {
+              is_disabled: false
+              outer_width: 262
+              outer_height: 60
+              content_width: 262
+              content_height: 60
+              x: 18
+              y: 112
+              padding_left: 0
+              padding_right: 0
+              padding_top: 0
+              padding_bottom: 0
+            }
+            children {
+              type: BODY_BOX
+              range_message {
+                padding_left {
+                  level: 0.5
+                  value: 0
+                }
+                padding_right {
+                  level: 0.5
+                  value: 0
+                }
+                padding_bottom {
+                  level: 0
+                  level: 1
+                  value: 2
+                  value: 10
+                }
+                padding_top {
+                  level: 0
+                  level: 1
+                  value: 2
+                  value: 10
+                }
+                font_size {
+                  level: 0
+                  level: 1
+                  value: 10
+                  value: 17
+                }
+              }
+              computed_message {
+                is_disabled: false
+                outer_width: 262
+                outer_height: 60
+                content_width: 262
+                content_height: 42
+                x: 18
+                y: 112
+                padding_left: 0
+                padding_right: 0
+                padding_top: 9
+                padding_bottom: 9
+                font_size: 16
+                font_color: "#888888"
+                font_rendering_spec {
+                  font_family: ROBOTO_LIGHT
+                  font_weight: NORMAL
+                  font_weight_value: 400
+                  font_family_css: "\"Roboto\",arial,sans-serif"
+                  web_font_names: "Roboto"
+                }
+                content_lines: "Jobs in Kidderminster Full Time or "
+                content_lines: "Part Time. No experience required. "
+              }
+              css_class: "rh-body"
+              vertical_rendering_mode: FLOW
+              horizontal_rendering_mode: FLOW_MAX
+              rendering_type: TEXT_AD_BODY_ELEMENT
+              elasticity: 1
+              font_weight: NORMAL
+              line_height: 1.3
+              body_box_options {
+                is_clickable: true
+              }
+              font_color {
+                source: BODY_COLOR
+              }
+              force_linebreaks: true
+            }
+            vertical_align: MIDDLE
+            vertical_rendering_mode: FIXED
+            horizontal_rendering_mode: FLOW
+          }
+          vertical_rendering_mode: FIXED
+          horizontal_rendering_mode: FIXED
+          elasticity: 1
+        }
+        children {
+          type: VERTICAL_FLOW_BOX
+          range_message {
+            padding_left {
+              level: 0.5
+              expression_value {
+                type: AD_UNIT_WIDTH
+                multiplicative_factor: 0.06
+                constant: 0
+              }
+            }
+            padding_right {
+              level: 0.5
+              expression_value {
+                type: AD_UNIT_WIDTH
+                multiplicative_factor: 0.06
+                constant: 0
+              }
+            }
+            padding_bottom {
+              level: 0.5
+              expression_value {
+                type: AD_UNIT_HEIGHT
+                multiplicative_factor: 0.04
+                constant: 0
+              }
+            }
+            padding_top {
+              level: 0.5
+              expression_value {
+                type: AD_UNIT_HEIGHT
+                multiplicative_factor: 0.04
+                constant: 0
+              }
+            }
+          }
+          computed_message {
+            is_disabled: false
+            outer_width: 298
+            outer_height: 52
+            content_width: 262
+            content_height: 32
+            x: 0
+            y: 196
+            padding_left: 18
+            padding_right: 18
+            padding_top: 10
+            padding_bottom: 10
+          }
+          children {
+            type: HORIZONTAL_FLOW_BOX
+            range_message {
+            }
+            computed_message {
+              is_disabled: false
+              outer_width: 262
+              outer_height: 32
+              content_width: 262
+              content_height: 32
+              x: 18
+              y: 206
+              padding_left: 0
+              padding_right: 0
+              padding_top: 0
+              padding_bottom: 0
+            }
+            children {
+              type: URL_BOX
+              range_message {
+                padding_left {
+                  level: 0.5
+                  value: 0
+                }
+                padding_right {
+                  level: 0
+                  level: 1
+                  value: 3
+                  value: 10
+                }
+                padding_bottom {
+                  level: 0.5
+                  value: 0
+                }
+                padding_top {
+                  level: 0.5
+                  value: 0
+                }
+                font_size {
+                  level: 0
+                  level: 1
+                  value: 11
+                  value: 13
+                }
+              }
+              computed_message {
+                is_disabled: false
+                outer_width: 136
+                outer_height: 32
+                content_width: 127
+                content_height: 32
+                x: 18
+                y: 206
+                padding_left: 0
+                padding_right: 9
+                padding_top: 0
+                padding_bottom: 0
+                font_size: 13
+                font_color: "#646464"
+                font_rendering_spec {
+                  font_family: ROBOTO_LIGHT
+                  font_weight: NORMAL
+                  font_weight_value: 400
+                  font_family_css: "\"Roboto\",arial,sans-serif"
+                  web_font_names: "Roboto"
+                }
+              }
+              css_class: "rh-url"
+              horizontal_align: LEFT
+              vertical_rendering_mode: FLOW
+              horizontal_rendering_mode: FIXED
+              one_line: true
+              rendering_type: TEXT_AD_URL_ELEMENT
+              elasticity: 1
+              extra_css {
+                property: "color"
+                selector_suffix: " .rhurl span"
+                value_color {
+                  source: URL_COLOR
+                }
+              }
+              extra_css {
+                property: "color"
+                selector_suffix: " .rhurl:hover"
+                value_color {
+                  source: URL_COLOR
+                }
+              }
+              labels: "no_favicon"
+              labels: "cut_vis_url_to_host"
+              font_weight: NORMAL
+              line_height: 1.3
+              font_color {
+                source: URL_COLOR
+              }
+            }
+            children {
+              type: NESSIE_BUTTON_BOX
+              is_disabled: false
+              range_message {
+                font_size {
+                  level: 0
+                  level: 1
+                  value: 12
+                  value: 14
+                }
+                min_content_width {
+                  level: 0
+                  level: 1
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.3
+                    constant: 0
+                  }
+                  expression_value {
+                    type: AD_UNIT_WIDTH
+                    multiplicative_factor: 0.44
+                    constant: 0
+                  }
+                }
+                min_content_height {
+                  level: 0
+                  level: 1
+                  value: 22
+                  value: 33
+                }
+              }
+              computed_message {
+                is_disabled: false
+                outer_width: 126
+                outer_height: 32
+                content_width: 126
+                content_height: 32
+                x: 154
+                y: 206
+                padding_left: 0
+                padding_right: 0
+                padding_top: 0
+                padding_bottom: 0
+                font_size: 14
+                button_box_computations {
+                  button_border_radius: 6
+                  button_border_width: 0
+                  button_icon_height: 17
+                  button_icon_max_width: 17
+                  button_icon_leading_padding: 0
+                  button_container_width: 294
+                  is_button_message_center_expanded: true
+                }
+              }
+              css_class: "rh-nessie-button"
+              horizontal_align: CENTER
+              vertical_rendering_mode: FIXED
+              horizontal_rendering_mode: FIXED
+              extra_css {
+                property: "color"
+                selector_suffix: " .rhbutton .message"
+                value_color {
+                  source: BACKGROUND_COLOR
+                }
+              }
+              extra_css {
+                property: "background-color"
+                selector_suffix: " .rhbutton"
+                value_color {
+                  source: BUTTON_COLOR
+                }
+              }
+              extra_css {
+                property: "font-family"
+                value: "\"Roboto\",arial,sans-serif"
+                selector_suffix: " .rhbutton"
+              }
+              extra_css {
+                property: "font-weight"
+                value: "500"
+                selector_suffix: " .rhbutton"
+              }
+              extra_css {
+                property: "border-radius"
+                value: "2px"
+                selector_suffix: " .rhbutton"
+              }
+              extra_css {
+                property: "text-transform"
+                value: "uppercase"
+                selector_suffix: " .rhbutton"
+              }
+              extra_css {
+                property: "box-shadow"
+                value: "0 0 2px 0 rgba(0,0,0,0.12), 0 2px 2px 0 rgba(0,0,0,0.24)"
+                selector_suffix: " .rhbutton"
+              }
+              restrict_to_min_content_size: true
+              button_box_options {
+                max_icon_aspect_ratio: 1
+                max_icon_height_ratio: 0.56
+                border_width: 0
+                rounded_corners_ratio: 0.5
+                default_icon_rendering {
+                  one_point_five_click_mode: EXPANDED
+                  override_aspect_ratio: 1
+                  svg_png_icon_options {
+                    icon_id: NESSIE_CHEVRON_ICON
+                  }
+                }
+                ctc_icon_rendering {
+                  override_aspect_ratio: 1
+                  svg_png_icon_options {
+                    icon_id: CTC_ICON
+                  }
+                }
+                download_icon_rendering {
+                  svg_png_icon_options {
+                    icon_id: DOWNLOAD_ICON
+                  }
+                }
+                position: BUTTON_BOTTOM
+                hide_icon: true
+                data_source: DEFAULT_SOURCE
+                override_rounded_corners_ratio: 0.2
+                message_type: OPEN_UPPERCASE
+                border_style: "solid"
+                border_color {
+                  source: BUTTON_COLOR
+                }
+              }
+              content_message {
+                icon_rendering_type: DEFAULT_ICON_RENDERING
+              }
+            }
+            vertical_rendering_mode: FIXED
+            horizontal_rendering_mode: FIXED
+          }
+          vertical_rendering_mode: FLOW
+          horizontal_rendering_mode: FIXED
+          extra_css {
+            property: "background-color"
+            selector_suffix: ""
+            value_color {
+              source: EXTRA_COLOR1
+            }
+          }
+        }
+        vertical_rendering_mode: FIXED
+        horizontal_rendering_mode: FIXED
+      }
+      textual_layout: "RHINDLE_STEWIE_KISS_SQUARE"
+      rules {
+        decision: REJECT
+        condition {
+          operation: NOT
+          operands {
+            statement: NUM_ADS_IS
+            int_value: 1
+          }
+        }
+      }
+      rules {
+        decision: REJECT
+        condition {
+          statement: HAS_LOGO_IMAGE
+          bool_value: true
+        }
+      }
+      rules {
+        decision: REJECT
+        condition {
+          statement: AD_UNIT_HEIGHT_SMALLER_THAN
+          int_value: 50
+        }
+      }
+      rules {
+        decision: MULTIPLY_SCORE
+        condition {
+          statement: ALWAYS_TRUE
+        }
+        score_multiplier: 60
+      }
+      accept_layout_mode: VERTICAL_MODE
+      accept_layout_mode: HORIZONTAL_MODE
+      accept_layout_mode: SLIDE_VERTICAL_MODE
+      layout_options {
+        allow_background_clickable: true
+        button_background_hover: false
+        palette {
+          title_color {
+            default_color {
+              hardcoded_color: "#37474F"
+            }
+          }
+          url_color {
+            default_color {
+              hardcoded_color: "#646464"
+            }
+          }
+          body_color {
+            default_color {
+              hardcoded_color: "#888"
+            }
+          }
+          button_color {
+            default_color {
+              source: AD_MAIN_COLOR
+            }
+            fallback_colors {
+              source: AD_ACCENT_COLOR
+              modifications_when_conditions_not_valid {
+                blend_with_color {
+                  factor: 0
+                  other_color: "#324148"
+                }
+                color_conditions {
+                  use_inverse: true
+                  pass_contrast_ratio {
+                    threshold: 2.75
+                    other_color: "#ffffff"
+                  }
+                }
+              }
+            }
+            fallback_colors {
+              source: REQUEST_VIEW_TITLE
+            }
+            color_conditions {
+              pass_contrast_ratio {
+                threshold: 2.75
+                other_color: "#ffffff"
+              }
+            }
+          }
+          background_color {
+            default_color {
+              hardcoded_color: "#FFF"
+            }
+          }
+          border_color {
+            default_color {
+              hardcoded_color: "#e6e7e8"
+            }
+          }
+          extra_color1 {
+            default_color {
+              hardcoded_color: "#EEE"
+            }
+          }
+        }
+        ad_slot_chrome_options {
+          top {
+            size {
+              min_pixels: 1
+            }
+            color {
+              source: BORDER_COLOR
+            }
+          }
+          bottom {
+            size {
+              min_pixels: 1
+            }
+            color {
+              source: BORDER_COLOR
+            }
+          }
+          left {
+            size {
+              min_pixels: 1
+            }
+            color {
+              source: BORDER_COLOR
+            }
+          }
+          right {
+            size {
+              min_pixels: 1
+            }
+            color {
+              source: BORDER_COLOR
+            }
+          }
+          ad_slot_border_protection {
+            top_px: 5
+            right_px: 5
+            bottom_px: 5
+            left_px: 5
+          }
+        }
+        font_family: ROBOTO_LIGHT
+        adunit_background_color {
+          default_color {
+            hardcoded_color: "#FFF"
+          }
+        }
+      }
+      computed_message {
+        palette {
+          title_color: "#37474f"
+          url_color: "#646464"
+          body_color: "#888888"
+          button_color: "#0000ff"
+          background_color: "#ffffff"
+          border_color: "#e6e7e8"
+          extra_color1: "#eeeeee"
+          extra_color2: ""
+          palette_source_color {
+            key: 0
+            value: ""
+          }
+          palette_source_color {
+            key: 1
+            value: "#0000ff"
+          }
+          palette_source_color {
+            key: 2
+            value: "#008000"
+          }
+          palette_source_color {
+            key: 3
+            value: "#000000"
+          }
+          palette_source_color {
+            key: 4
+            value: "#ffffff"
+          }
+          palette_source_color {
+            key: 5
+            value: "#ffffff"
+          }
+          palette_source_color {
+            key: 6
+            value: ""
+          }
+          palette_source_color {
+            key: 7
+            value: ""
+          }
+          palette_source_color {
+            key: 8
+            value: ""
+          }
+          palette_source_color {
+            key: 9
+            value: ""
+          }
+          palette_source_color {
+            key: 10
+            value: ""
+          }
+          palette_source_color {
+            key: 11
+            value: ""
+          }
+          palette_source_color {
+            key: 12
+            value: ""
+          }
+          palette_source_color {
+            key: 13
+            value: ""
+          }
+          palette_source_color {
+            key: 14
+            value: ""
+          }
+          palette_source_color {
+            key: 15
+            value: ""
+          }
+          palette_source_color {
+            key: 16
+            value: ""
+          }
+          palette_source_color {
+            key: 17
+            value: ""
+          }
+          palette_source_color {
+            key: 18
+            value: ""
+          }
+          palette_source_color {
+            key: 19
+            value: ""
+          }
+          palette_source_color {
+            key: 20
+            value: ""
+          }
+          palette_source_color {
+            key: 21
+            value: ""
+          }
+          palette_source_color {
+            key: 22
+            value: ""
+          }
+          palette_source_color {
+            key: 23
+            value: ""
+          }
+          palette_source_color {
+            key: 24
+            value: ""
+          }
+          palette_source_color {
+            key: 25
+            value: ""
+          }
+          palette_source_color {
+            key: 26
+            value: "FFFFFF"
+          }
+          palette_source_color {
+            key: 27
+            value: "FFFFFF"
+          }
+          palette_source_color {
+            key: 28
+            value: "0000FF"
+          }
+          palette_source_color {
+            key: 29
+            value: "000000"
+          }
+          palette_source_color {
+            key: 30
+            value: "008000"
+          }
+          palette_source_color {
+            key: 31
+            value: ""
+          }
+          palette_source_color {
+            key: 32
+            value: ""
+          }
+          palette_source_color {
+            key: 33
+            value: ""
+          }
+          palette_source_color {
+            key: 34
+            value: ""
+          }
+        }
+      }
+      modifier_overrides {
+        density_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        rounded_corners_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        merge_layout_options_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        icon_style_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        text_alignment_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        auto_css_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        button_alignment_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        button_border_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        url_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        border_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        background_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        icon_size_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        button_text_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        animation_modifier {
+        }
+        is_disabled: true
+      }
+      modifier_overrides {
+        is_disabled: true
+        font_size_modifier {
+        }
+      }
+      modifier_overrides {
+        is_disabled: true
+        grey_palette_modifier {
+        }
+      }
+    }
+  }
+  rhindle_spec {
+    optimization_time_ms: 30
+    layout_mode: VERTICAL_MODE
+    expand_level: 0.8671875
+    slide_ui_spec {
+      slide_ui_computation_successful: false
+    }
+    carousel_ui_spec {
+      left_start_pos_px: 0
+      left_size_px: 0
+      middle_start_pos_px: 0
+      right_start_pos_px: 0
+    }
+    layout_options {
+      allow_background_clickable: true
+      button_background_hover: false
+      palette {
+        title_color {
+          default_color {
+            hardcoded_color: "#37474F"
+          }
+        }
+        url_color {
+          default_color {
+            hardcoded_color: "#646464"
+          }
+        }
+        body_color {
+          default_color {
+            hardcoded_color: "#888"
+          }
+        }
+        button_color {
+          default_color {
+            source: AD_MAIN_COLOR
+          }
+          fallback_colors {
+            source: AD_ACCENT_COLOR
+            modifications_when_conditions_not_valid {
+              blend_with_color {
+                factor: 0
+                other_color: "#324148"
+              }
+              color_conditions {
+                use_inverse: true
+                pass_contrast_ratio {
+                  threshold: 2.75
+                  other_color: "#ffffff"
+                }
+              }
+            }
+          }
+          fallback_colors {
+            source: REQUEST_VIEW_TITLE
+          }
+          color_conditions {
+            pass_contrast_ratio {
+              threshold: 2.75
+              other_color: "#ffffff"
+            }
+          }
+        }
+        background_color {
+          default_color {
+            hardcoded_color: "#FFF"
+          }
+        }
+        border_color {
+          default_color {
+            hardcoded_color: "#e6e7e8"
+          }
+        }
+        extra_color1 {
+          default_color {
+            hardcoded_color: "#EEE"
+          }
+        }
+      }
+      ad_slot_chrome_options {
+        top {
+          size {
+            min_pixels: 1
+          }
+          color {
+            source: BORDER_COLOR
+          }
+        }
+        bottom {
+          size {
+            min_pixels: 1
+          }
+          color {
+            source: BORDER_COLOR
+          }
+        }
+        left {
+          size {
+            min_pixels: 1
+          }
+          color {
+            source: BORDER_COLOR
+          }
+        }
+        right {
+          size {
+            min_pixels: 1
+          }
+          color {
+            source: BORDER_COLOR
+          }
+        }
+        ad_slot_border_protection {
+          top_px: 5
+          right_px: 5
+          bottom_px: 5
+          left_px: 5
+        }
+      }
+      font_family: ROBOTO_LIGHT
+      adunit_background_color {
+        default_color {
+          hardcoded_color: "#FFF"
+        }
+      }
+    }
+    rhindle_debug_spec {
+    }
+  }
+  font_spec {
+    font_rendering_spec {
+      font_family: ROBOTO_LIGHT
+      font_weight: LIGHT
+      font_weight_value: 300
+      font_family_css: "\"Roboto\",arial,sans-serif"
+      web_font_names: "Roboto"
+    }
+    computed {
+      final_web_font_link: "Roboto:300,400,500"
+      language: "en"
+      subtext_web_font_link: ""
+    }
+  }
+  enable_one_point_five_click_controller: false
+  ad_content_language: EN
+  enable_transparent_background: false
+  id: 0
+}
+</pre></div><p></p><p>Rendering Builder ( BuildRenderingResultProducer-0 ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_bd&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_bd&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_bd&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_bd" class="rendering-builder-buildrenderingresultproducer-0" style="display:none;"><pre>contentads::bow::rendering::amp_ad::AmpAdBuilder contentads::bow::rendering::text_ads::TextAdsBuilder </pre></div><p></p><p>Rendering Template ( ExpandPageElementProducer-0 ) (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_be&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_be&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_be&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_be" class="rendering-template-expandpageelementproducer-0" style="display:none;"><pre>{{#FILE=versioned_data/dev/templates/elements/gri/amp/amp_ad_response_post.tpl}}{{#SEC=__{{MAIN}}__}}{{#INC=CREATIVE_HTML}}{{#FILE=versioned_data/dev/templates/elements/utils/string_post20091025.tpl}}{{#SEC=__{{MAIN}}__}}{{#VAR=STRING}}&lt;!doctype html&gt;&lt;html amp4ads class=i-amphtml-inabox i-amphtml-layout i-amphtml-no-boilerplate&gt;&lt;head&gt;&lt;meta charset=utf-8&gt;&lt;style amp-runtime i-amphtml-version=011536699515199&gt;html{overflow-x:hidden!important}body,html{height:auto!important}html.i-amphtml-fie{height:100%!important;width:100%!important}body{margin:0!important;-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;-ms-text-size-adjust:100%;text-size-adjust:100%}[hidden]{display:none!important}html.i-amphtml-singledoc.i-amphtml-embedded{-ms-touch-action:pan-y;touch-action:pan-y}html.i-amphtml-fie&gt;body,html.i-amphtml-singledoc&gt;body{overflow:visible!important;position:relative!important}html.i-amphtml-webview&gt;body{overflow-x:hidden!important;overflow-y:visible!important;min-height:100vh!important}html.i-amphtml-ios-embed-legacy&gt;body{overflow-x:hidden!important;overflow-y:auto!important;position:absolute!important}html.i-amphtml-ios-embed{overflow-y:auto!important;position:static}#i-amphtml-wrapper{overflow-x:hidden!important;overflow-y:auto!important;position:absolute!important;top:0!important;left:0!important;right:0!important;bottom:0!important;margin:0!important;display:block!important}html.i-amphtml-ios-embed.i-amphtml-ios-overscroll,html.i-amphtml-ios-embed.i-amphtml-ios-overscroll&gt;#i-amphtml-wrapper{-webkit-overflow-scrolling:touch!important}#i-amphtml-wrapper&gt;body{position:relative!important;border-top:1px solid transparent!important}html.i-amphtml-ios-embed-sd{overflow:hidden!important;position:static!important}html.i-amphtml-ios-embed-sd&gt;body,html.i-amphtml-singledoc.i-amphtml-ios-embed-sd&gt;body{position:absolute!important;top:0!important;left:0!important;right:0!important;bottom:0!important;overflow:hidden!important}.i-amphtml-element{display:inline-block}.i-amphtml-blur{-webkit-filter:blur(20px)!important;filter:blur(20px)!important;-webkit-transform:scale(1.1)!important;transform:scale(1.1)!important;-webkit-transition:opacity 0.3s cubic-bezier(0.0,0.0,0.2,1)!important;transition:opacity 0.3s cubic-bezier(0.0,0.0,0.2,1)!important}.i-amphtml-layout-fixed,[layout=fixed][width][height]:not(.i-amphtml-layout-fixed){display:inline-block;position:relative}.i-amphtml-layout-responsive,[layout=responsive][width][height]:not(.i-amphtml-layout-responsive),[width][height][sizes]:not(.i-amphtml-layout-responsive){display:block;position:relative}.i-amphtml-layout-intrinsic{display:inline-block;position:relative;max-width:100%}.i-amphtml-intrinsic-sizer{max-width:100%;display:block!important}.i-amphtml-layout-fixed-height,[layout=fixed-height][height]{display:block;position:relative}.i-amphtml-layout-container,[layout=container]{display:block;position:relative}.i-amphtml-layout-fill,[layout=fill]:not(.i-amphtml-layout-fill){display:block;overflow:hidden!important;position:absolute;top:0;left:0;bottom:0;right:0}.i-amphtml-layout-flex-item,[layout=flex-item]:not(.i-amphtml-layout-flex-item){display:block;position:relative;-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto}.i-amphtml-layout-fluid{position:relative}.i-amphtml-layout-size-defined{overflow:hidden!important}.i-amphtml-layout-awaiting-size{position:absolute!important;top:auto!important;bottom:auto!important}i-amphtml-sizer{display:block!important}.i-amphtml-blur,.i-amphtml-fill-content{display:block;height:0;max-height:100%;max-width:100%;min-height:100%;min-width:100%;width:0;margin:auto}.i-amphtml-layout-size-defined .i-amphtml-fill-content{position:absolute;top:0;left:0;bottom:0;right:0}.i-amphtml-layout-intrinsic .i-amphtml-sizer{max-width:100%}.i-amphtml-replaced-content,.i-amphtml-screen-reader{padding:0!important;border:none!important}.i-amphtml-screen-reader{position:fixed!important;top:0px!important;left:0px!important;width:4px!important;height:4px!important;opacity:0!important;overflow:hidden!important;margin:0!important;display:block!important;visibility:visible!important}.i-amphtml-screen-reader~.i-amphtml-screen-reader{left:8px!important}.i-amphtml-screen-reader~.i-amphtml-screen-reader~.i-amphtml-screen-reader{left:12px!important}.i-amphtml-screen-reader~.i-amphtml-screen-reader~.i-amphtml-screen-reader~.i-amphtml-screen-reader{left:16px!important}.i-amphtml-unresolved{position:relative;overflow:hidden!important}#i-amphtml-wrapper.i-amphtml-scroll-disabled,.i-amphtml-scroll-disabled{overflow-x:hidden!important;overflow-y:hidden!important}.i-amphtml-select-disabled{-webkit-user-select:none!important;-moz-user-select:none!important;-ms-user-select:none!important;user-select:none!important}.i-amphtml-notbuilt,[layout]:not(.i-amphtml-element){position:relative;overflow:hidden!important;color:transparent!important}.i-amphtml-notbuilt:not(.i-amphtml-layout-container)&gt;*,[layout]:not([layout=container]):not(.i-amphtml-element)&gt;*{display:none}.i-amphtml-ghost{visibility:hidden!important}[layout=nodisplay]:not(.i-amphtml-display){display:none!important}.i-amphtml-element&gt;[placeholder],[layout]:not(.i-amphtml-element)&gt;[placeholder]{display:block}.i-amphtml-element&gt;[placeholder].amp-hidden,.i-amphtml-element&gt;[placeholder].hidden{visibility:hidden}.i-amphtml-element:not(.amp-notsupported)&gt;[fallback]{display:none}.i-amphtml-layout-size-defined&gt;[fallback],.i-amphtml-layout-size-defined&gt;[placeholder]{position:absolute!important;top:0!important;left:0!important;right:0!important;bottom:0!important;z-index:1}.i-amphtml-notbuilt&gt;[placeholder]{display:block!important}.i-amphtml-hidden-by-media-query{display:none!important}.i-amphtml-element-error{background:red!important;color:#fff!important;position:relative!important}.i-amphtml-element-error:before{content:attr(error-message)}i-amp-scroll-container,i-amphtml-scroll-container{position:absolute;top:0;left:0;right:0;bottom:0;display:block}i-amp-scroll-container.amp-active,i-amphtml-scroll-container.amp-active{overflow:auto;-webkit-overflow-scrolling:touch}.i-amphtml-loading-container{display:block!important;z-index:1}.i-amphtml-notbuilt&gt;.i-amphtml-loading-container{display:block!important}.i-amphtml-loading-container.amp-hidden{visibility:hidden}.i-amphtml-loader-line{position:absolute;top:0;left:0;right:0;height:1px;overflow:hidden!important;background-color:hsla(0,0%,59.2%,0.2);display:block}.i-amphtml-loader-moving-line{display:block;position:absolute;width:100%;height:100%!important;background-color:hsla(0,0%,59.2%,0.65);z-index:2}@-webkit-keyframes i-amphtml-loader-line-moving{0%{-webkit-transform:translateX(-100%);transform:translateX(-100%)}to{-webkit-transform:translateX(100%);transform:translateX(100%)}}@keyframes i-amphtml-loader-line-moving{0%{-webkit-transform:translateX(-100%);transform:translateX(-100%)}to{-webkit-transform:translateX(100%);transform:translateX(100%)}}.i-amphtml-loader-line.amp-active .i-amphtml-loader-moving-line{-webkit-animation:i-amphtml-loader-line-moving 4s ease infinite;animation:i-amphtml-loader-line-moving 4s ease infinite}.i-amphtml-loader{position:absolute;display:block;height:10px;top:50%;left:50%;-webkit-transform:translateX(-50%) translateY(-50%);transform:translateX(-50%) translateY(-50%);-webkit-transform-origin:50% 50%;transform-origin:50% 50%;white-space:nowrap}.i-amphtml-loader.amp-active .i-amphtml-loader-dot{-webkit-animation:i-amphtml-loader-dots 2s infinite;animation:i-amphtml-loader-dots 2s infinite}.i-amphtml-loader-dot{position:relative;display:inline-block;height:10px;width:10px;margin:2px;border-radius:100%;background-color:rgba(0,0,0,0.3);box-shadow:2px 2px 2px 1px rgba(0,0,0,0.2);will-change:transform}.i-amphtml-loader .i-amphtml-loader-dot:first-child{-webkit-animation-delay:0s;animation-delay:0s}.i-amphtml-loader .i-amphtml-loader-dot:nth-child(2){-webkit-animation-delay:.1s;animation-delay:.1s}.i-amphtml-loader .i-amphtml-loader-dot:nth-child(3){-webkit-animation-delay:.2s;animation-delay:.2s}@-webkit-keyframes i-amphtml-loader-dots{0%,to{-webkit-transform:scale(.7);transform:scale(.7);background-color:rgba(0,0,0,0.3)}50%{-webkit-transform:scale(.8);transform:scale(.8);background-color:rgba(0,0,0,0.5)}}@keyframes i-amphtml-loader-dots{0%,to{-webkit-transform:scale(.7);transform:scale(.7);background-color:rgba(0,0,0,0.3)}50%{-webkit-transform:scale(.8);transform:scale(.8);background-color:rgba(0,0,0,0.5)}}.i-amphtml-element&gt;[overflow]{cursor:pointer;position:relative;z-index:2;visibility:hidden}.i-amphtml-element&gt;[overflow].amp-visible{visibility:visible}template{display:none!important}.amp-border-box,.amp-border-box *,.amp-border-box :after,.amp-border-box :before{box-sizing:border-box}amp-pixel{display:none!important}amp-instagram{padding:64px 0px 0px!important;background-color:#fff}amp-analytics,amp-story-auto-ads{position:fixed!important;top:0!important;width:1px!important;height:1px!important;overflow:hidden!important;visibility:hidden}amp-iframe iframe{box-sizing:border-box!important}[amp-access][amp-access-hide]{display:none}[subscriptions-dialog],body:not(.i-amphtml-subs-ready) [subscriptions-action],body:not(.i-amphtml-subs-ready) [subscriptions-section]{display:none!important}form [submit-error],form [submit-success],form [submitting]{display:none}[visible-when-invalid]{display:none}amp-live-list&gt;[update]{display:none}amp-experiment,amp-share-tracking{display:none}.i-amphtml-jank-meter{position:fixed;background-color:rgba(232,72,95,0.5);bottom:0;right:0;color:#fff;font-size:16px;z-index:1000;padding:5px}amp-accordion{display:block!important}amp-accordion&gt;section{float:none!important}amp-accordion&gt;section&gt;*{float:none!important;display:block!important;overflow:hidden!important;position:relative!important}.i-amphtml-accordion-content,.i-amphtml-accordion-header,amp-accordion,amp-accordion&gt;section{margin:0}.i-amphtml-accordion-header{cursor:pointer;background-color:#efefef;padding-right:20px;border:1px solid #dfdfdf}amp-accordion&gt;section&gt;:last-child{display:none!important}amp-accordion&gt;section[expanded]&gt;:last-child{display:block!important}amp-story-page,amp-story[standalone]{display:block!important;height:100%!important;margin:0!important;padding:0!important;overflow:hidden!important;width:100%!important}amp-story[standalone]{background-color:#fff!important;position:relative!important}amp-story-page{background-color:#757575}amp-story .i-amphtml-loader{display:none!important}[amp-fx^=fly-in]{visibility:hidden}
+/*# sourceURL=/css/amp.css*/html.i-amphtml-inabox{width:100%!important;height:100%!important}html.i-amphtml-inabox&gt;body{position:initial!important}&lt;/style&gt;&lt;meta content="width=device-width,minimum-scale=1,initial-scale=1" name=viewport&gt;&lt;meta content=noindex name=robots&gt;&lt;link as=script href=https://cdn.ampproject.org/rtv/011536699515199/amp4ads-v0.js rel=preload&gt;&lt;script async src=https://cdn.ampproject.org/rtv/011536699515199/amp4ads-v0.js&gt;&lt;/script&gt;&lt;script async custom-element=amp-analytics src=https://cdn.ampproject.org/rtv/011536699515199/v0/amp-analytics-0.1.js&gt;&lt;/script&gt;&lt;script async custom-element=amp-fit-text src=https://cdn.ampproject.org/rtv/011536699515199/v0/amp-fit-text-0.1.js&gt;&lt;/script&gt;&lt;script async custom-element=amp-form src=https://cdn.ampproject.org/rtv/011536699515199/v0/amp-form-0.1.js&gt;&lt;/script&gt;&lt;link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&amp;amp;lang=en" rel=stylesheet type=text/css&gt;&lt;style amp-custom&gt;body,table,div,ul,li{margin:0;padding:0}body{font-family:"Roboto",arial,sans-serif;}#adunit {background-color: #ffffff;height: 250px;width: 300px;}#ads {height: 248px;left: 1px;position: absolute;top: 1px;width: 298px;}#ads ul{list-style: none;}#ads ul li {clear: both;float: left;line-height: 0;overflow: hidden;position: relative;  }#ads table {border-collapse: collapse;border-spacing: 0;}.rhsvgpngicon {vertical-align:middle;}.rh-gradient {width: 100%;height: 100%;position: absolute;left: 0;top: 0;}.ads_chrome_top {position: absolute;overflow: hidden;top: 0px;width: 300px;height:1px;background-color: #e6e7e8;}.ads_chrome_bottom {position: absolute;overflow: hidden;bottom: 0px;width: 300px;height:1px;background-color: #e6e7e8;}.ads_chrome_left {position: absolute;overflow: hidden;left: 0px;width:1px;height: 250px;background-color: #e6e7e8;}.ads_chrome_right {position: absolute;overflow: hidden;right: 0px;width:1px;height: 250px;background-color: #e6e7e8;}.rhtitle.rhdefaultcolored {color: #0000ff;}.rhtitle {text-decoration: none;word-wrap: break-word;}.rhurlctr {overflow: hidden;}.rhurlctr_nowrap {text-overflow: ellipsis;white-space: nowrap;}.rhurlctr_clickable {cursor: pointer;}.rhurl {text-decoration: none;}.rhurl:hover {text-decoration: underline;}.rhurl:hover.rhdefaultcolored,.rhurlctr.rhdefaultcolored,.rhurl.rhdefaultcolored span,.rhurl.rhdefaultcolored span:hover {color: #008000;}.rhbutton-container {position: relative;}.rhbutton {cursor: pointer;display: inline-block;margin: 0;text-align: center;white-space: nowrap;}.rhbutton .message {color: white;display: inline-block;overflow: hidden;vertical-align: middle;}.rhbutton .message span {margin-left: 0.3em;margin-right: 0.3em;}.rhbutton .icon-container {display: inline-block;vertical-align: middle;}.rhbutton .icon, .rhbutton .rhsvgpngicon {border-width: 0;}.taw0 .rh101 .rhbutton-container {text-align: center;}.taw0 .rh101 .rhbutton {background: #0000ff;-webkit-border-radius: 6px;border-radius: 6px;border-width: 0px;height: 32px;min-width: 126px;max-width: 294px;border-color: #0000ff;border-style: solid;}.taw0 .rh101 .rhbutton:hover {background: #2d2de5;}.taw0 .rh101 .icon-container {height: 32px;line-height: 32px;width: 17px;}.taw0 .rh101 .icon, .taw0 .rh101 .icon-container .rhsvgpngicon {height: 17px;margin-left: 0px;vertical-align: top;margin-top: 7px;}.taw0 .rh101 .message {line-height: 32px;font-size: 14px;max-width: 0;}.taw0 .rh101 .one-point-five-click .message {color: white;max-width: 277px;}#ads .rh00 a{color:#37474f} #ads .rh00 span{color:#37474f} #ads .rh020 a{color:#888888} #ads .rh020 span{color:#888888} #ads .rh1{background-color:#eeeeee} #ads .rh100 .rhurl span{color:#646464} #ads .rh100 .rhurl:hover{color:#646464} #ads .rh101 .rhbutton{background-color:#0000ff;border-radius:2px;box-shadow:0 0 2px 0 rgba(0,0,0,0.12), 0 2px 2px 0 rgba(0,0,0,0.24);font-family:"Roboto",arial,sans-serif;font-weight:500;text-transform:uppercase} #ads .rh101 .rhbutton .message{color:#ffffff} .rh{display:inline-block;font-size:0;height:248px;line-height:0;overflow:hidden;padding:0;width:298px} .rh &gt; table{width:100%} .rh0{display:inline-block;font-size:0;height:148px;line-height:0;overflow:hidden;padding:24px 18px 24px 18px;width:262px} .rh0 &gt; table{width:100%} .rh00{color:#37474f;display:inline-block;font-family:"Roboto",arial,sans-serif;font-size:29px;font-weight:500;line-height:35px;max-width:262px;padding:9px 0 9px 0;white-space:nowrap} .rh00c{height:0;padding:0} .rh01{display:inline-block;height:0;overflow:hidden;padding:0} .rh01c{height:0;padding:0} .rh02{display:inline-block;font-size:0;height:60px;line-height:0;overflow:hidden;padding:0} .rh02 &gt; table{height:100%} .rh020{color:#888888;display:inline-block;font-family:"Roboto",arial,sans-serif;font-size:16px;font-weight:400;line-height:21px;max-width:262px;padding:9px 0 9px 0;white-space:nowrap} .rh020c{padding:0} .rh02c{height:60px;padding:0;vertical-align:middle} .rh0c{height:196px;padding:0;width:298px} .rh1{display:inline-block;font-size:0;line-height:0;overflow:hidden;padding:10px 18px 10px 18px;width:262px} .rh1 &gt; table{width:100%} .rh10{display:inline-block;font-size:0;height:32px;line-height:0;overflow:hidden;padding:0;width:262px} .rh10 &gt; table{height:100%} .rh100{color:#646464;display:inline-block;font-family:"Roboto",arial,sans-serif;font-size:13px;font-weight:400;line-height:17px;overflow:hidden;padding:0 9px 0 0;white-space:nowrap;width:127px} .rh100c{padding:0;text-align:left;width:136px} .rh101{display:inline-block;font-size:14px;height:32px;line-height:17px;padding:0;width:126px} .rh101c{height:32px;padding:0;text-align:center;width:126px} .rh10c{height:32px;padding:0;width:262px} .rh1c{padding:0;width:298px} .taw{height:248px;width:298px}.abgc {position:absolute;z-index:9020;right:0;top:0;}.abgc amp-img, .abgc img {display:block;}.abgs {display:none;position:absolute;-webkit-transform:translateX(76px);transform:translateX(76px);right:16px;top:0;}.abgcp {position:absolute;right:0;top:0;padding-left:10px;padding-bottom:10px;}.abgb {position:relative;margin-right:16px;top:0;}.abgc:hover .abgs {-webkit-transform:none;transform:none;}.cbb {display: block;position: absolute;right:0;top:0;cursor: pointer;height: 15px;width: 15px;z-index: 9020;padding-left:16px;}.btn {display: inline-block;border-radius: 2px;-moz-box-sizing: border-box;-webkit-box-sizing: border-box;box-sizing: border-box;box-shadow: 0px 0px 2px rgba(0,0,0,0.12), 0px 1px 3px rgba(0,0,0,0.26);cursor: pointer;font-size: 0.7em;margin: 0 1px 0.4em 1px;}@media (max-width: 375px) and (min-height: 100px) {.btn {display: block;width: 90%;max-width: 240px;margin-left: auto;margin-right: auto;}}#spv1 amp-fit-text&gt;div {-webkit-justify-content: flex-start;justify-content: flex-start;}.jm.sh #spv1 amp-fit-text&gt;div {-webkit-justify-content: center;justify-content: center;}.jt .pn amp-fit-text&gt;div {-webkit-justify-content: flex-start;justify-content: flex-start;}.btn &gt; span {display: inline-block;padding: 0.5em 0.6em;line-height: 1em;}#sbtn {background-color: #FFFFFF;color: #9E9EA6;text-decoration: none;}#sbtn:hover,#sbtn:active {background-color: #F5F5F5;}#rbtn {background-color: rgb(66,133,245);color: white;}#rbtn:hover,#rbtn:active {background-color: #3275E5;}#mta {position:absolute;top: 0;left: 0;font-family: Arial, sans-serif;}#mta input[type="radio"] {display: none;}#mta .pn {left: -300px;top: -250px;position: absolute;width:300px;height:250px;-moz-box-sizing: border-box;-webkit-box-sizing: border-box;box-sizing: border-box;background-color: #FAFAFA;text-align: center;}#spv2 {display: -webkit-flex;display: flex;-webkit-justify-content: flex-start;justify-content: flex-start;-webkit-flex-wrap: nowrap;flex-wrap: nowrap;overflow: hidden;background-color: #FAFAFA;font-size: 0;}.sv #spv2 {-webkit-flex-direction: column;flex-direction: column;}.sh #spv2 {-webkit-flex-direction: row;flex-direction: row;-webkit-justify-content: center;justify-content: center;}.sh.sr #spv2 {-webkit-justify-content: flex-start;justify-content: flex-start;}.jt.sv #spv2 {-webkit-justify-content: flex-start;justify-content: flex-start;-webkit-align-items: center;align-items: center;}.jm.sh #spv2 {-webkit-align-items: center;align-items: center;}.jm.sv #spv2 {-webkit-justify-content: center;justify-content: center;-webkit-align-items: center;align-items: center;}#spv2 * {-moz-box-sizing: border-box;-webkit-box-sizing: border-box;box-sizing: border-box;}#mta input[name="a"]:checked ~ #cbb {display: none;}#spv3 {opacity:1;}.amp-animate #spv4 {opacity:0;transition: opacity 0.5s linear 2.5s;}.amp-animate  #spv3 amp-fit-text {opacity:1;transition: opacity 0.5s linear 2s;}#spr3:checked ~ #spv3 amp-fit-text {opacity:0}#spr3:checked ~ #spv4 {opacity:1;}#spr1:checked ~ #spv1,#spr2:checked ~ #spv2,#spr3:checked ~ #spv3,#spr3:checked ~ #spv4{right: 0px;top: 0px;}.ct svg {border: 0;margin: 0 0 -0.45em 0;display: inline-block;height: 1.38em;opacity: 0.4;}.ct {display: inline-block;line-height: 1.28em;color: rgba(0,0,0,0.4);text-align:center;padding: 0.3em;}.fct {padding: 1em;}#pct {display: block;font-weight: bold;padding: 1em 0.3em;}#ti {width: 300px;}#btns {width: 300px;}.fl {width: 300px;height:250px;}#si {position: relative;display: inline-block;margin-bottom: -0.15em;height: 1em;width: 1em;opacity: 0.4;}.sb {flex-shrink: 0;height: 50px;}.so {position: relative;z-index: 9110;overflow: hidden;display: inline-block;padding: 1px 5px;width: 96px;height: 50px;border: 1px solid #E0E0E0;background-color: #FFFFFF;cursor: pointer;}.so:hover,.so:active {background-color: #F5F5F5;}.so div {display: -webkit-flex;display: flex;-webkit-align-items: center;align-items: center;-webkit-justify-content: center;justify-content: center;width: 100%;height: 100%;}.so span {color: #4285F4;font-family: Arial, sans-serif;text-align: center;font-size: 12px;line-height: 14px;white-space: normal;}@media (min-height: 54px) {.sh.ss .so,.sv .so {box-shadow: 0px 0px 2px rgba(0,0,0,0.12), 0px 1px 3px rgba(0,0,0,0.26);border: none;}}.sh .so {margin-left: -1px;box-shadow: none;}.sh .so:first-child {margin-left: 0;}.sh.ss .so {margin-left: 8px;}.sh.ss .so:first-child {margin-left: 0;}.sh.jt .sb {margin-top: 8px;}.sv .so,.sh.ss .so {border-radius: 2px;}.sv .so {margin: 4px;}.sv.jt .so:first-child {margin-top: 8px;}.rhbody.rhdefaultcolored {color: #000000;}.rhbody {text-decoration: none;word-wrap: break-word;}a.rhbody:hover {text-decoration: underline;}.amp-bcp {display: inline-block;position: absolute;z-index: 9;}.amp-bcp-top {top: 0;left: 0;width: 300px;height: 5px;}.amp-bcp-right {top: 0;left: 295px;width: 5px;height: 250px;}.amp-bcp-bottom {top: 245px;left: 0;width: 300px;height: 5px;}.amp-bcp-left {top: 0;left: 0;width: 5px;height: 250px;}.amp-fcp {display: inline-block;position: absolute;z-index: 9;top: 0;left: 0;width: 300px;height: 250px;-webkit-transform: translateY(250px);transform: translateY(250px);}.amp-animate .amp-fcp {-webkit-animation: 1000ms step-end amp-fcp-anim;animation: 1000ms step-end amp-fcp-anim;}@-webkit-keyframes amp-fcp-anim {0% {-webkit-transform: translateY(0);transform: translateY(0);}100% {-webkit-transform: translateY(250px);transform: translateY(250px);}}@keyframes amp-fcp-anim {0% {-webkit-transform: translateY(0);transform: translateY(0);}100% {-webkit-transform: translateY(250px);transform: translateY(250px);}}&lt;/style&gt;&lt;/head&gt;&lt;body class=amp-animate&gt;&lt;div data-rh-set-type=0 id=adunit&gt;&lt;div data-ifc=[[[&amp;#34;5,5,5,5&amp;#34;,null,9,2],[null,1000,9,2,4]]] id=ads&gt;&lt;ul&gt;&lt;li class="taw taw0" data-dim=298x248 data-slide=false id=taw0 lang=en&gt;&lt;div class=rh&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=rh0c&gt;&lt;div class=rh0&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=rh00c&gt;&lt;div class="rh-box-title rh-title rh00 collapsed-box" id&gt;&lt;a class=rhtitle href="https://www.googleadservices.com/pagead/aclk?sa=L&amp;amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;amp;num=1&amp;amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;amp;client=ca-pub-7200731081367426&amp;amp;nx=CLICK_X&amp;amp;ny=CLICK_Y&amp;amp;nb=0&amp;amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1" target=_top title=sercanto.co.uk&gt;&lt;span&gt;Work in &lt;br&gt;Kidderminster&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td class=rh01c&gt;&lt;div class="rh-box-empty rh01" id&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td class=rh02c&gt;&lt;div class=rh02&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=rh020c&gt;&lt;div class="rh-body rh-box-body rh020" id&gt;&lt;a class=rhbody href="https://www.googleadservices.com/pagead/aclk?sa=L&amp;amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;amp;num=1&amp;amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;amp;client=ca-pub-7200731081367426&amp;amp;nx=CLICK_X&amp;amp;ny=CLICK_Y&amp;amp;nb=7&amp;amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1" target=_top title&gt;&lt;span&gt;Jobs in Kidderminster Full Time or &lt;br&gt;Part Time. No experience required. &lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td class=rh1c&gt;&lt;div class=rh1&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=rh10c&gt;&lt;div class=rh10&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=rh100c&gt;&lt;div class="rh-box-url rh-url rh100" id&gt;&lt;div class="rhurlctr rhurlctr_nowrap rhurlctr_clickable" dir=ltr&gt;&lt;a class=rhurl href="https://www.googleadservices.com/pagead/aclk?sa=L&amp;amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;amp;num=1&amp;amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;amp;client=ca-pub-7200731081367426&amp;amp;nx=CLICK_X&amp;amp;ny=CLICK_Y&amp;amp;nb=1&amp;amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1" target=_top title=sercanto.co.uk&gt;&lt;span&gt;sercanto.co.uk&lt;/span&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class=rh101c&gt;&lt;div class="rh-box-button rh-nessie-button rh101" id&gt;&lt;div class=rhbutton-container&gt;&lt;a class="rhbutton one-point-five-click preexpanded" data-p1-5c=true href="https://www.googleadservices.com/pagead/aclk?sa=L&amp;amp;ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;amp;num=1&amp;amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;amp;sig=AOD64_2l8BG1SUilKSd1KQhrby9IZmozPw&amp;amp;client=ca-pub-7200731081367426&amp;amp;nx=CLICK_X&amp;amp;ny=CLICK_Y&amp;amp;nb=8&amp;amp;adurl=http://www.sercanto.co.uk/ads/search.php%3Fqu%3Djob%26w%3DKidderminster%26promo%3D1%26all%3D1" target=_top title=sercanto.co.uk&gt;&lt;div class=message&gt;&lt;span&gt;OPEN&lt;/span&gt;&lt;/div&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/li&gt;&lt;amp-pixel allow-ssr-img class="i-amphtml-layout-fixed i-amphtml-layout-size-defined" i-amphtml-layout=fixed i-amphtml-ssr src="https://securepubads.g.doubleclick.net/pagead/adview?ai=CUPvJxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBP4CT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-MAEvc3m49MB4AQBiAWnvpTEBZIFBAgEGAGSBQQIBRgE2AYCgAerhtZfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhuoB-nNG9gHAfIHBRDEq7wBoAj2uT2wCALSCAkIgOGAEBABGAGACgPYEwyCFCMaITQ4NTg1ZjBlMTI2YTc4NzIuYW5vbnltb3VzLmdvb2dsZQ&amp;amp;sigh=55-KMLW6eJk&amp;amp;tpd=AGWhJmuNgDwbnuL0T9n5ub7_UbIzeCc48-0Jd9DDAfi669S-Kw" style=width:1px;height:1px;&gt;&lt;img src="https://securepubads.g.doubleclick.net/pagead/adview?ai=CUPvJxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBP4CT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-MAEvc3m49MB4AQBiAWnvpTEBZIFBAgEGAGSBQQIBRgE2AYCgAerhtZfqAeOzhuoB9XJG6gHqAaoB7oGqAfZyxuoB8_MG6gHpr4bqAeYzhuoB-nNG9gHAfIHBRDEq7wBoAj2uT2wCALSCAkIgOGAEBABGAGACgPYEwyCFCMaITQ4NTg1ZjBlMTI2YTc4NzIuYW5vbnltb3VzLmdvb2dsZQ&amp;amp;sigh=55-KMLW6eJk&amp;amp;tpd=AGWhJmuNgDwbnuL0T9n5ub7_UbIzeCc48-0Jd9DDAfi669S-Kw"&gt;&lt;/amp-pixel&gt;&lt;/ul&gt;&lt;/div&gt;&lt;div class=ads_chrome_top&gt;&lt;/div&gt;&lt;div class=ads_chrome_bottom&gt;&lt;/div&gt;&lt;div class=ads_chrome_left&gt;&lt;/div&gt;&lt;div class=ads_chrome_right&gt;&lt;/div&gt;&lt;/div&gt;&lt;amp-analytics class="i-amphtml-layout-fixed i-amphtml-layout-size-defined" i-amphtml-layout=fixed style=width:1px;height:1px; trigger=immediate&gt;&lt;script type=application/json&gt;{"transport": {"beacon": false, "xhrpost": false},"requests": {"visibility1": "https://pagead2.googlesyndication.com/pcs/activeview?xai=AKAOjsuXes01ooKTXsKcdew-nIBFXwvp0AoZgd9sSta0I3RiURgXpp1K56JCejphkQ1fyhvT2HAk0XhkSQ9lKs_u9890codYkTj6ouCtfyYQC8s9WQX55S7KLJ0QWG8&amp;sig=Cg0ArKJSzOa2X7WrjWL4EAE&amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;id=ampim&amp;o=${elementX},${elementY}&amp;d=${elementWidth},${elementHeight}&amp;ss=${screenWidth},${screenHeight}&amp;bs=${viewportWidth},${viewportHeight}&amp;mcvt=${maxContinuousVisibleTime}&amp;mtos=0,0,${maxContinuousVisibleTime},${maxContinuousVisibleTime},${maxContinuousVisibleTime}&amp;tos=0,0,${totalVisibleTime},0,0&amp;tfs=${firstSeenTime}&amp;tls=${lastSeenTime}&amp;g=${minVisiblePercentage}&amp;h=${maxVisiblePercentage}&amp;r=v&amp;pt=${pageLoadTime}&amp;tt=${totalTime}&amp;adk=1382433012&amp;avms=ampa"},"triggers": {"continuousVisible": {"on": "visible","request": ["visibility1"],"visibilitySpec": {"selector": ":root","visiblePercentageMin": 50,"continuousTimeMin": 1000}}}}&lt;/script&gt;&lt;/amp-analytics&gt;&lt;amp-pixel allow-ssr-img class="i-amphtml-layout-fixed i-amphtml-layout-size-defined" i-amphtml-layout=fixed i-amphtml-ssr src="https://www.google.com/ads/measurement/l?ebcid=ALh7CaSw8oDmi8lNa3qY4JN1jfDxS8qUaBLI04mpmr-81Gjg03SB4rYQLReBFTQrW-FPa-IACe0MrlJk5bqp4DKBXSKuy-n4Hg" style=width:1px;height:1px;&gt;&lt;img src="https://www.google.com/ads/measurement/l?ebcid=ALh7CaSw8oDmi8lNa3qY4JN1jfDxS8qUaBLI04mpmr-81Gjg03SB4rYQLReBFTQrW-FPa-IACe0MrlJk5bqp4DKBXSKuy-n4Hg"&gt;&lt;/amp-pixel&gt;&lt;div aria-hidden=true class=abgc dir=ltr id=abgc&gt;&lt;div class=abgcp id=abgcp&gt;&lt;div class=abgs id=abgs&gt;&lt;a class=abgl href="https://adssettings.google.com/whythisad?reasons=AB3afGEAAAFaW1tbW251bGwsWzEzXV0sW251bGwsbnVsbCxbbnVsbCxudWxsLG51bGwsImh0dHBzOi8vZGlzcGxheWFkcy1mb3JtYXRzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hZHMvcHJldmlldy9jb250ZW50LmpzP2NsaWVudD13dGFcdTAwMjZvYmZ1c2NhdGVkQ3VzdG9tZXJJZD03NDMyODkwMjAyXHUwMDI2Y3JlYXRpdmVJZD0yODM5ODYwNjc2NjVcdTAwMjZ2ZXJzaW9uSWQ9MFx1MDAyNmFkR3JvdXBDcmVhdGl2ZUlkPTI2OTgxOTE1MTc5NFx1MDAyNmh0bWxQYXJlbnRJZD1wcmV2LTBcdTAwMjZoZWlnaHQ9MFx1MDAyNndpZHRoPTBcdTAwMjZzaWc9QUNpVkJfeWFOLWYybUlTcHNJSmt1ZXBLQTcxTEFtdXRlQSJdXV1dXTTG5yWhya7o937YyIDJmZZN7n4Iw257c3ekXFdmu1_YXKI6nVuMmSIucVlIJ-YYHIHnkXMJJRm22C2tgIk7r7GkUmYPLBsDnQuVKuUfdhq8Xd2bP2SnhLuvdBxSFv2IV8QaFPLMQ_0RczzYTkVaYxuP7CC9G2L6GcEmtK6IwNJr6-RkzBkbqG47NtywXfB1CsZkKhqYbXE7t9m_qCh4u9MAmhWYtZe9gZHZQjn37o0Q8ddKnQ9Rd28jcXqKE0EgxilG4N3sx75oz5fF9j6myQp0ivpDwK4GQSoJtop2u_BNFGhBgCL2NLfcVQd2Fjn7kU8-EOtx-Y0xLVtK1O1RS0o,J1WZVjjobG5-ztn_aKEtTA&amp;amp;source=display&amp;amp;cbt=scuzNWObsWEIsovmk-0HEKe-lMQFGKqY9F8iDnNlcmNhbnRvLmNvLnVrMggIBRMY3K4OFEIXY2EtcHViLTcyMDA3MzEwODEzNjc0MjZIAFgBcAE&amp;amp;cv=https://googleads.g.doubleclick.net/pagead/conversion/%3Fai%3DChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl%26sigh%3DyqcyDPj4JDw" id=abgl target=_blank&gt;&lt;amp-img class="i-amphtml-layout-fixed i-amphtml-layout-size-defined" height=15 i-amphtml-layout=fixed i-amphtml-ssr src=https://tpc.googlesyndication.com/pagead/images/adchoices/en.png style=width:75px;height:15px; width=75&gt;&lt;img class="i-amphtml-fill-content i-amphtml-replaced-content" decoding=async src=https://tpc.googlesyndication.com/pagead/images/adchoices/en.png&gt;&lt;/amp-img&gt;&lt;/a&gt;&lt;/div&gt;&lt;div class=abgb id=abgb&gt;&lt;a href="https://adssettings.google.com/whythisad?reasons=AB3afGEAAAFaW1tbW251bGwsWzEzXV0sW251bGwsbnVsbCxbbnVsbCxudWxsLG51bGwsImh0dHBzOi8vZGlzcGxheWFkcy1mb3JtYXRzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hZHMvcHJldmlldy9jb250ZW50LmpzP2NsaWVudD13dGFcdTAwMjZvYmZ1c2NhdGVkQ3VzdG9tZXJJZD03NDMyODkwMjAyXHUwMDI2Y3JlYXRpdmVJZD0yODM5ODYwNjc2NjVcdTAwMjZ2ZXJzaW9uSWQ9MFx1MDAyNmFkR3JvdXBDcmVhdGl2ZUlkPTI2OTgxOTE1MTc5NFx1MDAyNmh0bWxQYXJlbnRJZD1wcmV2LTBcdTAwMjZoZWlnaHQ9MFx1MDAyNndpZHRoPTBcdTAwMjZzaWc9QUNpVkJfeWFOLWYybUlTcHNJSmt1ZXBLQTcxTEFtdXRlQSJdXV1dXTTG5yWhya7o937YyIDJmZZN7n4Iw257c3ekXFdmu1_YXKI6nVuMmSIucVlIJ-YYHIHnkXMJJRm22C2tgIk7r7GkUmYPLBsDnQuVKuUfdhq8Xd2bP2SnhLuvdBxSFv2IV8QaFPLMQ_0RczzYTkVaYxuP7CC9G2L6GcEmtK6IwNJr6-RkzBkbqG47NtywXfB1CsZkKhqYbXE7t9m_qCh4u9MAmhWYtZe9gZHZQjn37o0Q8ddKnQ9Rd28jcXqKE0EgxilG4N3sx75oz5fF9j6myQp0ivpDwK4GQSoJtop2u_BNFGhBgCL2NLfcVQd2Fjn7kU8-EOtx-Y0xLVtK1O1RS0o,J1WZVjjobG5-ztn_aKEtTA&amp;amp;source=display&amp;amp;cbt=scuzNWObsWEIsovmk-0HEKe-lMQFGKqY9F8iDnNlcmNhbnRvLmNvLnVrMggIBRMY3K4OFEIXY2EtcHViLTcyMDA3MzEwODEzNjc0MjZIAFgBcAE&amp;amp;cv=https://googleads.g.doubleclick.net/pagead/conversion/%3Fai%3DChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl%26sigh%3DyqcyDPj4JDw" target=_blank&gt;&lt;amp-img class="i-amphtml-layout-fixed i-amphtml-layout-size-defined" height=15 i-amphtml-layout=fixed i-amphtml-ssr src=https://tpc.googlesyndication.com/pagead/images/adchoices/icon.png style=width:15px;height:15px; width=15&gt;&lt;img class="i-amphtml-fill-content i-amphtml-replaced-content" decoding=async src=https://tpc.googlesyndication.com/pagead/images/adchoices/icon.png&gt;&lt;/amp-img&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;amp-analytics class="i-amphtml-layout-fixed i-amphtml-layout-size-defined" i-amphtml-layout=fixed style=width:1px;height:1px; trigger=immediate&gt;&lt;script type=application/json&gt;{"requests": {"reportNoLabelInstance": "https://googleads.g.doubleclick.net/pagead/conversion/?ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;sigh=yqcyDPj4JDw&amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;label=${label}${close_button_param}","reportLabelInstance": "https://googleads.g.doubleclick.net/pagead/conversion/?ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;sigh=yqcyDPj4JDw&amp;cid=CAASEuRoZVLQEXmgyotIxshRJ_aJEw&amp;label=${label}&amp;label_instance=${labelInstance}${closeButtonParam}"},"transport": {"beacon": false,"xhrpost": false,"image": true},"triggers": {"trackMute": {"on": "click","selector": "label[for='spr1']","request": "reportNoLabelInstance"},"trackReportAd": {"on": "click","selector": "label[for='spr2']","request": "reportLabelInstance"},"trackSurveyResponse": {"on": "click","selector": "label[for='spr3']","request": "reportLabelInstance"},"trackWhyThisAd": {"on": "click","selector": "#sbtn","request": "reportLabelInstance"}}}&lt;/script&gt;&lt;/amp-analytics&gt;&lt;form action=https://g.co class="sv jm amp-animate" id=mta target=_blank&gt;&lt;input id=spr1 name=a type=radio&gt;&lt;input id=spr2 name=a type=radio&gt;&lt;input id=spr3 name=a type=radio&gt;&lt;label class=cbb data-vars-label=user_feedback_menu_interaction for=spr1 id=cbb&gt;&lt;svg height=15 width=15 xmlns=//www.w3.org/2000/svg&gt;&lt;path d=M0,0l15,0l0,15l-15,0Z fill=#cdcccc&gt;&lt;/path&gt;&lt;path d=M3.25,3.25l8.5,8.5M11.75,3.25l-8.5,8.5 stroke=#00aecd stroke-width=1.25&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/label&gt;&lt;div class=pn id=spv1&gt;&lt;amp-fit-text class="fl i-amphtml-layout-responsive i-amphtml-layout-size-defined" height=250 i-amphtml-layout=responsive layout=responsive max-font-size=20 min-font-size=8 width=300&gt;&lt;i-amphtml-sizer style=display:block;padding-top:83.3333%;&gt;&lt;/i-amphtml-sizer&gt;&lt;div id=ti&gt;&lt;span class=ct&gt;Ad closed by &lt;svg fill=#000000 viewbox="0 0 60 24" xmlns=http://www.w3.org/2000/svg&gt;&lt;path d="M7.5 16.29c-4.07 0-7.49-3.31-7.49-7.38S3.43 1.53 7.5 1.53c2.25 0 3.85.88 5.06 2.03l-1.42 1.42c-.87-.81-2.04-1.44-3.64-1.44-2.97 0-5.29 2.4-5.29 5.37s2.32 5.37 5.29 5.37c1.93 0 3.03-.77 3.73-1.48.58-.58.95-1.4 1.1-2.54H7.5V8.24h6.79c.07.36.11.79.11 1.26 0 1.51-.41 3.39-1.75 4.72-1.3 1.35-2.95 2.07-5.15 2.07zm17.75-4.76c0 2.74-2.13 4.75-4.75 4.75s-4.75-2.02-4.75-4.75c0-2.75 2.13-4.75 4.75-4.75s4.75 2 4.75 4.75zm-2.08 0c0-1.71-1.24-2.88-2.67-2.88s-2.67 1.17-2.67 2.88c0 1.69 1.24 2.88 2.67 2.88s2.67-1.18 2.67-2.88zm13.08 0c0 2.74-2.13 4.75-4.75 4.75s-4.75-2.02-4.75-4.75c0-2.75 2.13-4.75 4.75-4.75s4.75 2 4.75 4.75zm-2.08 0c0-1.71-1.24-2.88-2.67-2.88s-2.67 1.17-2.67 2.88c0 1.69 1.24 2.88 2.67 2.88s2.67-1.18 2.67-2.88zm12.58-4.46v8.53c0 3.51-2.07 4.95-4.52 4.95-2.3 0-3.69-1.55-4.21-2.81l1.82-.76c.32.77 1.12 1.69 2.39 1.69 1.57 0 2.54-.97 2.54-2.79v-.68h-.07c-.47.58-1.37 1.08-2.5 1.08-2.38 0-4.56-2.07-4.56-4.74 0-2.68 2.18-4.77 4.56-4.77 1.13 0 2.03.5 2.5 1.06h.07v-.76h1.98zm-1.84 4.48c0-1.67-1.12-2.9-2.54-2.9-1.44 0-2.65 1.22-2.65 2.9 0 1.66 1.21 2.86 2.65 2.86 1.43.01 2.54-1.2 2.54-2.86zm5.89-9.52V16h-2.09V2.03h2.09zm8.49 11.07l1.62 1.08c-.52.77-1.78 2.11-3.96 2.11-2.7 0-4.72-2.09-4.72-4.75 0-2.83 2.03-4.75 4.48-4.75 2.47 0 3.67 1.96 4.07 3.02l.22.54-6.36 2.63c.49.95 1.24 1.44 2.3 1.44 1.07 0 1.81-.53 2.35-1.32zm-4.99-1.71l4.25-1.76c-.23-.59-.94-1.01-1.76-1.01-1.06 0-2.54.93-2.49 2.77z"&gt;&lt;/path&gt;&lt;path d="M0 0h62v24H0z" fill=none&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;/div&gt;&lt;div id=btns&gt;&lt;label data-vars-label=user_feedback_menu_option data-vars-label-instance=1 for=spr2&gt;&lt;a class=btn id=rbtn&gt;&lt;span&gt;Stop seeing this ad&lt;/span&gt;&lt;/a&gt;&lt;/label&gt;&lt;label&gt;&lt;a class=btn data-vars-label=closebutton_whythisad_click data-vars-label-instance=1 href="https://adssettings.google.com/whythisad?reasons=AB3afGEAAAFaW1tbW251bGwsWzEzXV0sW251bGwsbnVsbCxbbnVsbCxudWxsLG51bGwsImh0dHBzOi8vZGlzcGxheWFkcy1mb3JtYXRzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hZHMvcHJldmlldy9jb250ZW50LmpzP2NsaWVudD13dGFcdTAwMjZvYmZ1c2NhdGVkQ3VzdG9tZXJJZD03NDMyODkwMjAyXHUwMDI2Y3JlYXRpdmVJZD0yODM5ODYwNjc2NjVcdTAwMjZ2ZXJzaW9uSWQ9MFx1MDAyNmFkR3JvdXBDcmVhdGl2ZUlkPTI2OTgxOTE1MTc5NFx1MDAyNmh0bWxQYXJlbnRJZD1wcmV2LTBcdTAwMjZoZWlnaHQ9MFx1MDAyNndpZHRoPTBcdTAwMjZzaWc9QUNpVkJfeWFOLWYybUlTcHNJSmt1ZXBLQTcxTEFtdXRlQSJdXV1dXTTG5yWhya7o937YyIDJmZZN7n4Iw257c3ekXFdmu1_YXKI6nVuMmSIucVlIJ-YYHIHnkXMJJRm22C2tgIk7r7GkUmYPLBsDnQuVKuUfdhq8Xd2bP2SnhLuvdBxSFv2IV8QaFPLMQ_0RczzYTkVaYxuP7CC9G2L6GcEmtK6IwNJr6-RkzBkbqG47NtywXfB1CsZkKhqYbXE7t9m_qCh4u9MAmhWYtZe9gZHZQjn37o0Q8ddKnQ9Rd28jcXqKE0EgxilG4N3sx75oz5fF9j6myQp0ivpDwK4GQSoJtop2u_BNFGhBgCL2NLfcVQd2Fjn7kU8-EOtx-Y0xLVtK1O1RS0o,J1WZVjjobG5-ztn_aKEtTA&amp;amp;source=display&amp;amp;cbt=scuzNWObsWEIsovmk-0HEKe-lMQFGKqY9F8iDnNlcmNhbnRvLmNvLnVrMggIBRMY3K4OFEIXY2EtcHViLTcyMDA3MzEwODEzNjc0MjZIAFgBcAE&amp;amp;cv=https://googleads.g.doubleclick.net/pagead/conversion/%3Fai%3DChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl%26sigh%3DyqcyDPj4JDw" id=sbtn target=_blank&gt;&lt;span&gt;Why this ad?Â&nbsp;&lt;svg fill=#000000 id=si viewbox="0 0 16 16" xmlns=//www.w3.org/2000/svg&gt;&lt;circle cx=6 cy=6 r=0.67&gt;&lt;/circle&gt;&lt;path d=M4.2,11.3Q3.3,11.8,3.3,10.75L3.3,4.1Q3.3,3.1,4.3,3.5L10.4,7.0Q12.0,7.5,10.4,8.0L6.65,10.0L6.65,7.75a0.65,0.65,0,1,0,-1.3,0L5.35,10.75a0.9,0.9,0,0,0,1.3,0.8L12.7,8.2Q13.7,7.5,12.7,6.7L3.3,1.6Q2.2,1.3,1.8,2.5L1.8,12.5Q2.2,13.9,3.3,13.3L4.8,12.5A0.3,0.3,0,1,0,4.2,11.3Z&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;/a&gt;&lt;/label&gt;&lt;/div&gt;&lt;/amp-fit-text&gt;&lt;/div&gt;&lt;div class=pn id=spv2&gt;&lt;label class="sb so" data-vars-close_button-param="&amp;amp;cbt=scuzNWObsWEIsovmk-0HEKe-lMQFGKqY9F8iDnNlcmNhbnRvLmNvLnVrMggIBRMY3K4OFEIXY2EtcHViLTcyMDA3MzEwODEzNjc0MjZIAFgBcAE" data-vars-label=mute_survey_option data-vars-label-instance=3 for=spr3&gt;&lt;div&gt;&lt;span&gt;Ad covered content&lt;/span&gt;&lt;/div&gt;&lt;/label&gt;&lt;label class="sb so" data-vars-close_button-param="&amp;amp;cbt=scuzNWObsWEIsovmk-0HEKe-lMQFGKqY9F8iDnNlcmNhbnRvLmNvLnVrMggIBRMY3K4OFEIXY2EtcHViLTcyMDA3MzEwODEzNjc0MjZIAFgBcAE" data-vars-label=mute_survey_option data-vars-label-instance=7 for=spr3&gt;&lt;div&gt;&lt;span&gt;Not interested in this ad&lt;/span&gt;&lt;/div&gt;&lt;/label&gt;&lt;label class="sb so" data-vars-close_button-param="&amp;amp;cbt=scuzNWObsWEIsovmk-0HEKe-lMQFGKqY9F8iDnNlcmNhbnRvLmNvLnVrMggIBRMY3K4OFEIXY2EtcHViLTcyMDA3MzEwODEzNjc0MjZIAFgBcAE" data-vars-label=mute_survey_option data-vars-label-instance=2 for=spr3&gt;&lt;div&gt;&lt;span&gt;Seen this ad multiple times&lt;/span&gt;&lt;/div&gt;&lt;/label&gt;&lt;label class="sb so" data-vars-close_button-param="&amp;amp;cbt=scuzNWObsWEIsovmk-0HEKe-lMQFGKqY9F8iDnNlcmNhbnRvLmNvLnVrMggIBRMY3K4OFEIXY2EtcHViLTcyMDA3MzEwODEzNjc0MjZIAFgBcAE" data-vars-label=mute_survey_option data-vars-label-instance=8 for=spr3&gt;&lt;div&gt;&lt;span&gt;Ad was inappropriate&lt;/span&gt;&lt;/div&gt;&lt;/label&gt;&lt;/div&gt;&lt;div class=pn id=spv3&gt;&lt;amp-fit-text class="fl i-amphtml-layout-responsive i-amphtml-layout-size-defined" height=250 i-amphtml-layout=responsive layout=responsive max-font-size=17 min-font-size=8 width=300&gt;&lt;i-amphtml-sizer style=display:block;padding-top:83.3333%;&gt;&lt;/i-amphtml-sizer&gt;&lt;span id=pct&gt;We&amp;#39;ll try not to show that ad again&lt;/span&gt;&lt;/amp-fit-text&gt;&lt;/div&gt;&lt;div class=pn id=spv4&gt;&lt;amp-fit-text class="fl i-amphtml-layout-responsive i-amphtml-layout-size-defined" height=250 i-amphtml-layout=responsive layout=responsive max-font-size=20 min-font-size=8 width=300&gt;&lt;i-amphtml-sizer style=display:block;padding-top:83.3333%;&gt;&lt;/i-amphtml-sizer&gt;&lt;span class="ct fct"&gt;Ad closed by &lt;svg fill=#000000 viewbox="0 0 60 24" xmlns=http://www.w3.org/2000/svg&gt;&lt;path d="M7.5 16.29c-4.07 0-7.49-3.31-7.49-7.38S3.43 1.53 7.5 1.53c2.25 0 3.85.88 5.06 2.03l-1.42 1.42c-.87-.81-2.04-1.44-3.64-1.44-2.97 0-5.29 2.4-5.29 5.37s2.32 5.37 5.29 5.37c1.93 0 3.03-.77 3.73-1.48.58-.58.95-1.4 1.1-2.54H7.5V8.24h6.79c.07.36.11.79.11 1.26 0 1.51-.41 3.39-1.75 4.72-1.3 1.35-2.95 2.07-5.15 2.07zm17.75-4.76c0 2.74-2.13 4.75-4.75 4.75s-4.75-2.02-4.75-4.75c0-2.75 2.13-4.75 4.75-4.75s4.75 2 4.75 4.75zm-2.08 0c0-1.71-1.24-2.88-2.67-2.88s-2.67 1.17-2.67 2.88c0 1.69 1.24 2.88 2.67 2.88s2.67-1.18 2.67-2.88zm13.08 0c0 2.74-2.13 4.75-4.75 4.75s-4.75-2.02-4.75-4.75c0-2.75 2.13-4.75 4.75-4.75s4.75 2 4.75 4.75zm-2.08 0c0-1.71-1.24-2.88-2.67-2.88s-2.67 1.17-2.67 2.88c0 1.69 1.24 2.88 2.67 2.88s2.67-1.18 2.67-2.88zm12.58-4.46v8.53c0 3.51-2.07 4.95-4.52 4.95-2.3 0-3.69-1.55-4.21-2.81l1.82-.76c.32.77 1.12 1.69 2.39 1.69 1.57 0 2.54-.97 2.54-2.79v-.68h-.07c-.47.58-1.37 1.08-2.5 1.08-2.38 0-4.56-2.07-4.56-4.74 0-2.68 2.18-4.77 4.56-4.77 1.13 0 2.03.5 2.5 1.06h.07v-.76h1.98zm-1.84 4.48c0-1.67-1.12-2.9-2.54-2.9-1.44 0-2.65 1.22-2.65 2.9 0 1.66 1.21 2.86 2.65 2.86 1.43.01 2.54-1.2 2.54-2.86zm5.89-9.52V16h-2.09V2.03h2.09zm8.49 11.07l1.62 1.08c-.52.77-1.78 2.11-3.96 2.11-2.7 0-4.72-2.09-4.72-4.75 0-2.83 2.03-4.75 4.48-4.75 2.47 0 3.67 1.96 4.07 3.02l.22.54-6.36 2.63c.49.95 1.24 1.44 2.3 1.44 1.07 0 1.81-.53 2.35-1.32zm-4.99-1.71l4.25-1.76c-.23-.59-.94-1.01-1.76-1.01-1.06 0-2.54.93-2.49 2.77z"&gt;&lt;/path&gt;&lt;path d="M0 0h62v24H0z" fill=none&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;/amp-fit-text&gt;&lt;/div&gt;&lt;/form&gt;&lt;/div&gt;&lt;div class="amp-bcp-top amp-bcp"&gt;&lt;/div&gt;&lt;div class="amp-bcp-right amp-bcp"&gt;&lt;/div&gt;&lt;div class="amp-bcp-bottom amp-bcp"&gt;&lt;/div&gt;&lt;div class="amp-bcp-left amp-bcp"&gt;&lt;/div&gt;&lt;div class=amp-fcp&gt;&lt;/div&gt;&lt;amp-analytics class="i-amphtml-layout-fixed i-amphtml-layout-size-defined" i-amphtml-layout=fixed style=width:1px;height:1px; trigger=immediate&gt;&lt;script type=application/json&gt;{"requests": {"convPing": "//googleads.g.doubleclick.net/pagead/conversion/?ai=ChGyXxLmYW8DDFoPAtgf0tqzQCvr6htlSsovmk-0HwI23ARABILraliVgu76rg9AKoAG9-amgA8gBAakCjCB9w9N0sz7gAgCoAwHIAwqqBIEDT9BaqpZEtX_23Xx2Zf7ndRpln9UL_lqKKeLq5OfjOVyPsanB3hdvUXt1-DM4_dw1TY2k7y89_4x49c29RBgPKfTtpdl-Pk1ko7dgJqsKYajaZsaqoLjHInmIRdw7aEQ0nK4_l56Beto2DWWNRP3wQpHhObDvAideiGb_V66-nSplBKp_3te3Go_1Gxw7Wapp1RQICrg1fKuxN_y9U9SOnYy5sG7Bjn5h1-gJMZdrqW5eDPi8lkNzQgmY2VEZUG1dB0WBQ9japyq-AxB2dpTpUdEvwvzcScZJOeXAQA8trGr8MWO6lAh_bYMrCBUPPQuANDz9gGtmLTbYtH40apkRqFSP-geVIxWnwxgpjCn0K22tjJGc2_aOm4CmYR4d1ltchk3_rGTFLjj0zEyAA4lG0kIS-mdrtAxWLzYPQPAWg1V317zzLP8-Foxb6_ldoYD75xRzc5skiqeBu4ZiGnaVCSGJjh9vKJAgqon_mrgvOR6qQVOdywsrpwW3AgIF-CHU3MAEvc3m49MB4AQBiAWnvpTEBdgGAoAHq4bWX6gHjs4bqAfVyRuoB6gGqAe6BqgH2csbqAfPzBuoB6a-G6gHmM4bqAeaBtgHAaAI9rk9sAgC0ggJCIDhgBAQARgBsQnkbmxTEhxuWoAKA9gTDIIUIxohNDg1ODVmMGUxMjZhNzg3Mi5hbm9ueW1vdXMuZ29vZ2xl&amp;sigh=yqcyDPj4JDw&amp;label=${label}"},"transport": {"beacon": false,"xhrpost": false,"image": true},"triggers": {"trackBC": {"on": "click","selector": ".amp-bcp","request": "convPing","vars": {"label": "blocked_border_click"}},"trackFC": {"on": "click","selector": ".amp-fcp","request": "convPing","vars": {"label": "blocked_fast_click"}}}}&lt;/script&gt;&lt;/amp-analytics&gt;&lt;/body&gt;&lt;/html&gt;{{/VAR}}
+{{/SEC}}{{/FILE}}{{/INC}}{{/SEC}}{{/FILE}}</pre></div><p></p><p>Rendering Server rlog (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_bf&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_bf&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_bf&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_bf" class="rendering-server-rlog" style="display:none;"><pre>I0912 11:00:14.590876  828091 proto-capture-producer.cc:33] rpc_id=18048476657354268126 ReqId=0: START: ProtoCaptureProducer::OnStart()
+I0912 11:00:14.590954  828091 bow-logging.cc:22] ReqId=0: START: ProtoCaptureProducer::ScheduleNextState()
+I0912 11:00:14.590972  828091 bow-logging.cc:28] ReqId=0: END: ProtoCaptureProducer::ScheduleNextState()
+I0912 11:00:14.590976  828091 proto-capture-producer.cc:43] rpc_id=18048476657354268126 ReqId=0: END: ProtoCaptureProducer::OnStart()
+I0912 11:00:14.591046  828091 parse-rendering-request-producer.cc:139] rpc_id=18048476657354268126 START: ParseRenderingRequestProducer::OnRun()
+I0912 11:00:14.591099  828091 parse-rendering-request-producer.cc:141] rpc_id=18048476657354268126 END: ParseRenderingRequestProducer::OnRun()
+I0912 11:00:14.591182  828091 experiment-state-producer.cc:274] rpc_id=18048476657354268126 START: ExperimentStateProducer::OnRun()
+I0912 11:00:14.593520  828091 experiment-state-producer.cc:317] rpc_id=18048476657354268126 ExperimentStateProducer: use Rendering Server FlagSettings.
+I0912 11:00:14.593559  828091 experiment-state-producer.cc:327] rpc_id=18048476657354268126 END: ExperimentStateProducer::OnRun()
+I0912 11:00:14.593694  828091 mlt-lookup-producer.cc:237] rpc_id=18048476657354268126 START: MltLookupProducer::OnRun()
+I0912 11:00:14.593743  828091 mlt-lookup-producer.cc:263] rpc_id=18048476657354268126 END: MltLookupProducer::OnRun()
+I0912 11:00:14.593767  828091 build-rendering-creative-vector-producer.cc:68] rpc_id=18048476657354268126 START: BuildRenderingCreativeVectorProducer-0 OnRun()
+I0912 11:00:14.594403  828091 creative_conversion_extension_point_util.cc:86] rpc_id=18048476657354268126 ConvertToRenderingCreative with contentads::bow::rendering::TextAdCreativeConversionExtension
+I0912 11:00:14.612378  828091 extension-stats-rlog-writer.h:51] Extension Point: contentads::bow::rendering::gdn::ConversionExtensionPoint, Name: TextAdCreativeConversionExtension, Body Cycles: 17841202, Body Time (usec): 17.83973925ms
+I0912 11:00:14.613357  828091 build-rendering-creative-vector-producer.cc:165] rpc_id=18048476657354268126 END: BuildRenderingCreativeVectorProducer-0 OnRun()
+I0912 11:00:14.614100  828091 build-rendering-result-producer.cc:101] rpc_id=18048476657354268126 START: BuildRenderingResultProducer-0::OnRun()
+I0912 11:00:14.614314  828091 build-rendering-result-producer.cc:115] rpc_id=18048476657354268126 Language for msg catalog = en
+I0912 11:00:14.615131  828091 amp_ad_builder_extension.cc:27] rpc_id=18048476657354268126 (a4a-cam@): AmpAdBuilderExtension accepted this traffic
+I0912 11:00:14.615148  828091 builder_extension_point.cc:120] rpc_id=18048476657354268126 (@gri-eng) CreateBuilder with contentads::bow::rendering::amp_ad::AmpAdBuilderExtension
+I0912 11:00:14.615190  828091 build-rendering-result-producer.cc:160] rpc_id=18048476657354268126 (gri-eng@) Create PageElement by GRI framework
+I0912 11:00:14.615399  828091 builder_extension_point.cc:120] rpc_id=18048476657354268126 (@gri-eng) CreateBuilder with contentads::bow::rendering::text_ads::TextAdsBuilderExtension
+I0912 11:00:14.619372  828091 asa-layout-engine-impl.cc:1183] rpc_id=18048476657354268126 Starts AsaLayoutEngineImpl::FillLayoutRenderingInfo (rhindle text-ad optimization)
+I0912 11:00:14.650619  828091 asa-layout-engine-impl.cc:1219] rpc_id=18048476657354268126 Using textual layout RHINDLE_STEWIE_KISS_SQUARE, layout mode VERTICAL_MODE
+I0912 11:00:14.676023  828091 text_ads_builder_extension.cc:97] rpc_id=18048476657354268126 (gri-eng@) TextAdsBuilder was created.
+I0912 11:00:14.686423  828091 builder.h:37] rpc_id=18048476657354268126 (@gri-eng) Create page element of type contentads::bow::rendering::text_ad_new::RootElement by contentads::bow::rendering::text_ads::TextAdsBuilder
+I0912 11:00:14.761674  828091 builder.h:37] rpc_id=18048476657354268126 (@gri-eng) Create page element of type contentads::bow::rendering::amp_ad::AmpAdResponseElement by contentads::bow::rendering::amp_ad::AmpAdBuilder
+I0912 11:00:14.768060  828091 build-rendering-result-producer.cc:253] rpc_id=18048476657354268126 END: BuildRenderingResultProducer-0::OnRun()
+I0912 11:00:14.768176  828091 expand-page-element-producer.cc:42] rpc_id=18048476657354268126 START: ExpandPageElementProducer-0::OnRun()
+I0912 11:00:14.768348  828091 render-page-element-util.cc:109] rpc_id=18048476657354268126 Render success = true
+I0912 11:00:14.771779  828091 expand-page-element-producer.cc:85] rpc_id=18048476657354268126 END: ExpandPageElementProducer-0::OnRun()
+I0912 11:00:14.772357  828091 render-afc-sra-response-producer.cc:84] rpc_id=18048476657354268126 START: RenderAfcSraResponseProducer::OnRun()
+I0912 11:00:14.772434  828091 assemble-rendering-response-producer.cc:138] rpc_id=18048476657354268126 START: AssembleRenderingResponseProducer::OnRun()
+</pre></div><p></p><p>Enabled Debug Messages (<a href="javascript:displaydiv(&#39;qnkx1-v6_827392_c0&#39;,true)">show</a> | <a href="javascript:displaydiv(&#39;qnkx1-v6_827392_c0&#39;,false)">hide</a> | <a href="javascript:selectalltext(&#39;qnkx1-v6_827392_c0&#39;)">select all text</a>) </p><div id="qnkx1-v6_827392_c0" class="enabled-debug-messages" style="display:none;">title: Rendering Conversion Extension, component: rendering/rce, level: 1<br>title: Rendering Conversion Extension ( 1 / 66 extensions selected. ), component: rendering/rce, level: 1<br>title: Rendering Creative Vector ( BuildRenderingCreativeVectorProducer-0 ), component: rendering/rcv, level: 1<br>title: Rendering Creative Vector Proto Form ( BuildRenderingCreativeVectorProducer-0 ), component: rendering/rcvproto, level: 1<br>title: Layout Rendering Infos, component: rendering/lri, level: 1<br>title: Rendering Builder ( BuildRenderingResultProducer-0 ), component: rendering/builder, level: 1<br>title: Rendering Template ( ExpandPageElementProducer-0 ), component: rendering/t, level: 1<br>title: Rendering Server rlog, component: rendering/rlog, level: 1<br></div><p></p></body></html>
