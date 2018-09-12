@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<!-- saved from url=(0090)http://localhost:8000/javascript/ads/formats/mysidia/demo_fs/mysidia-debug-playground.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" type="text/css" href="./mysidia-debug-playground_files/bootstrap.min.css">
+  <link rel="icon" type="image/x-icon" href="https://luyaochen.users.x20web.corp.google.com/www/static/m.ico">
+  <style>
+    :root {
+      --main-color: #7db3ba;
+    }
+    body {
+      margin: 10px;
+    }
+    #ads-preview > div {
+      display:inline-block;
+    }
+    #left-panel {
+      position: absolute;
+      width: 350px;
+    }
+    #left-panel .input-group {
+      margin: 3.5px 0;
+    }
+    .sub-panel {
+      margin: 15px;
+    }
+    .sub-panel-header {
+      padding: 10px 15px;
+      background-color: var(--main-color);
+      border: 1px var(--main-color) solid;
+      color: #fff;
+      font-weight: bold;
+    }
+    .sub-panel-content {
+      padding: 15px;
+      border: 1px var(--main-color) solid;
+      border-top: none;
+      background-color: #fff;
+    }
+    #ads-preview {
+      position: relative;
+      margin-left: 350px;
+      padding: 15px;
+    }
+    .preview-div {
+      margin: 5px;
+      display: inline-block;
+      vertical-align: top;
+    }
+    .preview-iframe {
+      box-sizing: content-box;
+      border: 1px #ccc dashed;
+    }
+    .tab {
+      overflow: hidden;
+      border: 1px var(--main-color) solid;
+      border-bottom: none;
+      background-color: #e0f2f1;
+    }
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 10px;
+      transition: 0.3s;
+    }
+    .tab button:hover {
+      background-color: #ddd;
+    }
+    .tab button.active {
+      background-color: #b2dfdb;
+    }
+    .rendering-info-header {
+      background-color: var(--main-color);
+      color: #fff;
+      margin: 0 5px;
+    }
+    .content {
+      width: 100%;
+    }
+    .rendering-info-header .small-icon {
+      padding: 0;
+      border: 0;
+      background-color: transparent;
+      opacity: 0.4;
+      margin-left: 10px;
+      vertical-align: text-bottom;
+      float: right;
+      color: #000;
+      text-shadow: 0 1px 0 #fff;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .resize {
+      resize: both;
+    }
+    .preview-iframe-wrapper {
+      position: relative;
+    }
+    .overlay-text {
+      background-color: yellow;
+      position: absolute;
+      right: 40%;
+      bottom: 50%;
+    }
+    .short-input {
+      width: 60px;
+    }
+  </style>
+  <script src="./mysidia-debug-playground_files/html_analyzer_bin.js"></script>
+  <script src="./mysidia-debug-playground_files/preview_bin.js"></script>
+  <script src="./mysidia-debug-playground_files/playground_bin.js"></script>
+  <script src="./mysidia-debug-playground_files/f.txt"></script>
+  <script>
+    startPlay();
+  </script>
+</head>
+<body>
+  <h1>Mysidia Debug Playground</h1>
+  <div>
+    <div id="left-panel">
+      <div class="sub-panel">
+        <div class="sub-panel-header">Step 1. Choose RenderingInput</div>
+        <div class="tab">
+          <button id="preserved-button" class="tablink active">Preserved</button>
+          <button id="fromrr-button" class="tablink">From RR</button>
+          <button id="fromri-button" class="tablink">From RI</button>
+        </div>
+        <div class="sub-panel-content tabcontent" id="preserved">
+          <div class="input-group">
+            <span class="input-group-addon">Local file</span>
+            <select class="form-control" id="ad-js-path">
+              <option value="text_ad_data">text_ad_data</option>
+              <option value="inarticle_ad_data">inarticle_ad_data</option>
+              <option value="scream_ad_data">scream_ad_data</option>
+              <option value="scream_multiple_ads_data">scream_multiple_ads_data</option>
+            </select>
+          </div>
+        </div>
+        <div class="sub-panel-content tabcontent hidden" id="fromrr">
+          <div class="input-group">
+            <span class="input-group-addon">Rendering Server Host</span>
+            <select class="form-control" id="rendering-server-host">
+              <option value="/abns/ads-bow/shared.bow_render.cat2/0">/abns/ads-bow/shared.bow_render.cat2/0</option>
+              <option value="localhost:18080">localhost:18080</option>
+              <option value="luyaochen.mtv.corp.google.com:18080">luyaochen.mtv.corp.google.com:18080</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <span>Rendering Request</span>
+            <textarea class="form-control" id="rr-input" rows="6" placeholder="block_rendering_request {"></textarea>
+          </div>
+          <button class="btn btn-success" id="rr-input-button">Get RenderingInput</button>
+          <div>
+            <span id="hint-text-rr"></span>
+          </div>
+        </div>
+        <div class="sub-panel-content tabcontent hidden" id="fromri">
+          <div class="input-group">
+            <span>Rendering Input</span>
+            <textarea class="form-control" id="ri-input" rows="6" placeholder="jspb"></textarea>
+          </div>
+          <button class="btn btn-success" id="ri-input-button">Load RenderingInput</button>
+          <div>
+            <span id="hint-text-ri"></span>
+          </div>
+        </div>
+      </div>
+      <div class="sub-panel">
+        <div class="sub-panel-header">Step 2. Specify Format &amp; Debug Options</div>
+        <div class="sub-panel-content">
+          <div class="input-group">
+            <span class="input-group-addon">Ad slot sizes</span>
+            <input class="form-control" id="ad-slots" placeholder="300x250,320x50">
+          </div>
+        </div>
+        <div class="sub-panel-content">
+          <div class="input-group">
+            <span class="input-group-addon">Design name</span>
+            <input class="form-control" id="design" placeholder="text/clay_demo" list="design-name-list">
+            <datalist id="design-name-list"><option value="example/scream/example">example/scream/example</option><option value="local_product/lca">local_product/lca</option><option value="scream/scream_interstitial_photo">scream/scream_interstitial_photo</option><option value="scream/scream_interstitial_photo_logo">scream/scream_interstitial_photo_logo</option><option value="scream/scream_interstitial_photo_logo_ad_wall">scream/scream_interstitial_photo_logo_ad_wall</option><option value="scream/scream_interstitial_throne_photo">scream/scream_interstitial_throne_photo</option><option value="scream/scream_interstitial_throne_photo_logo">scream/scream_interstitial_throne_photo_logo</option><option value="scream/static_image_logo_v3">scream/static_image_logo_v3</option><option value="scream/static_image_v3">scream/static_image_v3</option><option value="scream_multiple/partial_slot">scream_multiple/partial_slot</option><option value="text/clay_demo">text/clay_demo</option><option value="text/cube_square">text/cube_square</option><option value="text/cube_square_big">text/cube_square_big</option><option value="text/cube_square_fix">text/cube_square_fix</option><option value="text/cube_square_small">text/cube_square_small</option><option value="text/magneto_demo">text/magneto_demo</option><option value="text/magneto_v1">text/magneto_v1</option><option value="text/magneto_v2">text/magneto_v2</option><option value="text/marge_demo">text/marge_demo</option><option value="text/noir_square">text/noir_square</option><option value="text/noir_square_bigger">text/noir_square_bigger</option><option value="text/noir_square_smaller">text/noir_square_smaller</option><option value="text/noir_square_v2">text/noir_square_v2</option><option value="text/scaled_placement">text/scaled_placement</option><option value="video_ctd/video_ctd_demo">video_ctd/video_ctd_demo</option><option value="video_ctd/web_v1">video_ctd/web_v1</option><option value="video_mra/mra_video_new_v1">video_mra/mra_video_new_v1</option><option value="video_mra/mra_video_v1">video_mra/mra_video_v1</option><option value="video_mra/web_v1">video_mra/web_v1</option></datalist>
+          </div>
+          <div class="input-group">
+            <input id="prod-design" type="checkbox" value="prod"> Production Version
+          </div>
+          <div class="input-group local">
+            <span class="input-group-addon">Layout name</span>
+            <select class="form-control" id="layout"><option value="WINNER">WINNER</option><option value="320x50">320x50</option><option value="728x90">728x90</option><option value="300x250">300x250</option><option value="336x280">336x280</option><option value="970x250">970x250</option></select>
+          </div>
+          <div class="input-group local">
+            <span class="input-group-addon">Variant number</span>
+            <select class="form-control" id="variant"><option value="WINNER">WINNER</option></select>
+          </div>
+        </div>
+        <div class="sub-panel-content">
+          <div class="input-group">
+            <input id="is-rtl" type="checkbox" value="is-rtl"> RTL
+          </div>
+          <div class="input-group">
+            <input id="is-amp" type="checkbox" value="is-amp"> Amp
+          </div>
+        </div>
+        <div class="sub-panel-content local">
+          <div class="input-group">
+            <input id="overlay-client-view" type="checkbox" value="overlay-client-view"> Overlay Client View
+          </div>
+          <div class="input-group">
+            <input id="show-rendering-data" type="checkbox" value="show-rendering-data"> Show Rendering Data
+          </div>
+        </div>
+      </div>
+      <div class="sub-panel">
+        <div class="sub-panel-header">Step 3. Select Outputs</div>
+        <div class="sub-panel-content">
+          <div class="non-borg">
+            <span>Locally Built</span>
+          </div>
+          <div class="input-group non-borg">
+            <input id="pure-client" class="uncheck-for-borg" type="checkbox" value="pure-client" checked=""> Pure Client Estimation
+          </div>
+          <div class="input-group non-borg">
+            <input id="server" class="uncheck-for-borg" type="checkbox" value="server" checked=""> Server Estimation
+          </div>
+          <div class="input-group non-borg">
+            <input id="server-adjuster" class="uncheck-for-borg" type="checkbox" value="server-adjuster"> Server with adjuster
+          </div>
+          <div>
+            <span>Production Engine Version:</span>
+            <span id="prod-eng-version">RS20180905</span>
+          </div>
+          <div class="input-group">
+            <input id="prod-pure-client" class="check-for-borg" type="checkbox" value="prod-pure-client"> Pure Client Estimation (Prod Engine)
+          </div>
+          <div class="input-group">
+            <input id="prod-server" class="check-for-borg" type="checkbox" value="prod-server"> Server Estimation (Prod Engine)
+          </div>
+          <div class="input-group">
+            <input id="prod-server-adjuster" type="checkbox" value="prod-server-adjuster"> Server with adjuster (Prod Engine)
+          </div>
+          <div>
+            <span>Canary Engine Version:</span>
+            <span id="canary-eng-version">RS20180905</span>
+          </div>
+          <div class="input-group">
+            <input id="canary-pure-client" type="checkbox" value="canary-pure-client"> Pure Client Estimation (Canary Engine)
+          </div>
+          <div class="input-group">
+            <input id="canary-server" type="checkbox" value="canary-server"> Server Estimation (Canary Engine)
+          </div>
+          <div class="input-group">
+            <input id="canary-server-adjuster" type="checkbox" value="canary-server-adjuster"> Server with adjuster (Canary Engine)
+          </div>
+          <button class="btn btn-success" id="render-button-next" type="button">
+            RenderNext
+          </button>
+          <button class="btn btn-success" id="render-button-current" type="button">
+            RenderCurrent
+          </button>
+          <button class="btn btn-warning" id="clear-button" type="button">
+            Clear
+          </button>
+        </div>
+      </div>
+      <div class="sub-panel">
+        <div class="sub-panel-header">Tool Settings</div>
+        <div class="sub-panel-content">
+          <div class="input-group">
+            <span class="input-group-addon">Background Color</span>
+            <select class="form-control" id="tool-background-color">
+              <option value="#000">Top1PubColor:Black</option>
+              <option value="#fff">Top2PubColor:White</option>
+              <option value="#f5f5f5">Top3PubColor:LightGrey</option>
+              <option value="#3f3f3f">Top4PubColor:DarkGrey</option>
+              <option value="#e0e0e0">Top5PubColor:LightGrey2</option>
+              <option value="#2aa4b5">Top6PubColor:Teal</option>
+              <option value="#b0bec5">Top7PubColor:Grey</option>
+              <option value="#78909c">Top8PubColor:Grey2</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <iframe id="design_template" height="0px" style="border:none;position:absolute" src="./mysidia-debug-playground_files/scaled_placement.html"></iframe>
+    <div id="ads-preview"><div>
+      <div class="rendering-info-header">
+        <span class="header-text">300 x 250 text/scaled_placement WINNER WINNER</span>
+        <button type="button" class="small-icon close-preview">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon refresh-preview">
+          <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon resize-preview">
+          <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="preview-div">
+        <div class="preview-iframe-wrapper">
+          <iframe class="preview-iframe" width="300px" height="250px" id="p-1-1" data-stubby-version="l" src="./mysidia-debug-playground_files/saved_resource.html"></iframe>
+          <span class="overlay-text hidden">300px x 250px</span>
+        </div>
+        <div class="debug-info">
+          <span>Client Engine (Local)</span>
+          <div id="p-1-1-con" style="display: none; width: 300px;"></div>
+        </div>
+      </div>
+    </div><div>
+      <div class="rendering-info-header">
+        <span class="header-text">300 x 250 text/scaled_placement WINNER WINNER</span>
+        <button type="button" class="small-icon close-preview">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon refresh-preview">
+          <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon resize-preview">
+          <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="preview-div">
+        <div class="preview-iframe-wrapper">
+          <iframe class="preview-iframe" width="300px" height="250px" id="p-1-2" data-stubby-version="l" src="./mysidia-debug-playground_files/saved_resource(1).html"></iframe>
+          <span class="overlay-text hidden">300px x 250px</span>
+        </div>
+        <div class="debug-info">
+          <span>Server Engine (Local)</span>
+          <div id="p-1-2-con" style="display: none; width: 300px;"></div>
+        </div>
+      </div>
+    </div><div>
+      <div class="rendering-info-header">
+        <span class="header-text">300 x 250 text/scaled_placement WINNER WINNER</span>
+        <button type="button" class="small-icon close-preview">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon refresh-preview">
+          <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon resize-preview">
+          <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="preview-div">
+        <div class="preview-iframe-wrapper">
+          <iframe class="preview-iframe" width="300px" height="250px" id="p-2-1" data-stubby-version="l" src="./mysidia-debug-playground_files/saved_resource(2).html"></iframe>
+          <span class="overlay-text hidden">300px x 250px</span>
+        </div>
+        <div class="debug-info">
+          <span>Client Engine (Local)</span>
+          <div id="p-2-1-con" style="display: none; width: 300px;"></div>
+        </div>
+      </div>
+    </div><div>
+      <div class="rendering-info-header">
+        <span class="header-text">300 x 250 text/scaled_placement WINNER WINNER</span>
+        <button type="button" class="small-icon close-preview">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon refresh-preview">
+          <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon resize-preview">
+          <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="preview-div">
+        <div class="preview-iframe-wrapper">
+          <iframe class="preview-iframe" width="300px" height="250px" id="p-2-2" data-stubby-version="l" src="./mysidia-debug-playground_files/saved_resource(3).html"></iframe>
+          <span class="overlay-text hidden">300px x 250px</span>
+        </div>
+        <div class="debug-info">
+          <span>Server Engine (Local)</span>
+          <div id="p-2-2-con" style="display: none; width: 300px;"></div>
+        </div>
+      </div>
+    </div><div>
+      <div class="rendering-info-header">
+        <span class="header-text">300 x 250 text/scaled_placement WINNER WINNER</span>
+        <button type="button" class="small-icon close-preview">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon refresh-preview">
+          <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon resize-preview">
+          <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="preview-div">
+        <div class="preview-iframe-wrapper">
+          <iframe class="preview-iframe" width="300px" height="250px" id="p-3-1" data-stubby-version="l" src="./mysidia-debug-playground_files/saved_resource(4).html"></iframe>
+          <span class="overlay-text hidden">300px x 250px</span>
+        </div>
+        <div class="debug-info">
+          <span>Client Engine (Local)</span>
+          <div id="p-3-1-con" style="display: none; width: 300px;"></div>
+        </div>
+      </div>
+    </div><div>
+      <div class="rendering-info-header">
+        <span class="header-text">300 x 250 text/scaled_placement WINNER WINNER</span>
+        <button type="button" class="small-icon close-preview">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon refresh-preview">
+          <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="small-icon resize-preview">
+          <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="preview-div">
+        <div class="preview-iframe-wrapper">
+          <iframe class="preview-iframe" width="300px" height="250px" id="p-3-2" data-stubby-version="l" src="./mysidia-debug-playground_files/saved_resource(5).html"></iframe>
+          <span class="overlay-text hidden">300px x 250px</span>
+        </div>
+        <div class="debug-info">
+          <span>Server Engine (Local)</span>
+          <div id="p-3-2-con" style="display: none; width: 300px;"></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+  <template id="debug_node_server_info_item"></template>
+  <template id="manual_node_debug"></template>
+  <template id="preview_item"></template>
+
+
+</body></html>
