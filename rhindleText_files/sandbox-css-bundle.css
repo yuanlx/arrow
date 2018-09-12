@@ -1,0 +1,371 @@
+/* experimental/arrowteam/sandbox/static/css/sandbox.css */
+body.night {
+  background-color: #222222;
+  color: #DDDDDD;
+}
+
+#selection-panel, #action-buttons {
+  background-color: #eee;
+  border: 1px #bbb solid;
+  width: 320px;
+}
+
+#selection-panel {
+  position: absolute;
+  top: 66px;
+  left: 16px;
+  padding: 10px 20px;
+}
+#selection-panel.collapsed { display:none; }
+#selection-panel .input-group { margin: 3.5px 0; }
+#selection-panel .input-group > .input-group-addon { font-weight: 700; }
+#selection-panel > .main-options > .input-group-addon { min-width: 104px; }
+#selection-panel > .sub-options > .input-group-addon { min-width: 128px; }
+#selection-panel > .nav-tabs { padding-top: 8px; }
+#selection-panel > .nav > li > a { padding: 10px 5px; }
+
+#action-buttons {
+  text-align: right;
+  position: fixed;
+  padding: 8px;
+  top: 8px;
+  left: 16px;
+  height: 50px;
+  z-index: 999;
+}
+
+#output, #ad-analyzer { padding: 16px 0 0 352px; }
+#output.expanded, #ad-analyzer.expanded { padding: 64px 0 0; }
+
+.iframeContainer, .iframeItem {
+  position: relative;
+  display: inline-block;
+}
+.iframeContainer {
+  border: 1px #ccc solid;
+  padding: 10px;
+  margin: 10px;
+}
+.iframeItem { margin: 10px 10px 0; }
+.adformat-label {
+  color: grey;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  text-align: right;
+}
+
+iframe.border {
+  display: block;
+  box-sizing: content-box;
+  border: 1px #ccc dashed;
+}
+
+debug {
+  margin: 5px 0px;
+  display: inline-block;
+}
+debug > .options {
+  border-radius: 5px;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: none;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  z-index: 998;
+}
+debug:hover > .options { display: block; }
+
+.dismiss {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.ad-border-btn {
+  background: white;
+  border-radius: 13px;
+  position: absolute;
+  top: -12px;
+  padding: 5px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.night .ad-border-btn {
+  background: #222222;
+}
+.close-btn {
+  right: -14px;
+  font-size: 16px;
+  color: #C90000;
+}
+.refresh-btn {
+  right: 6px;
+  color: #E0E000;
+}
+.reload-btn {
+  right: 26px;
+  color: #20D600;
+}
+.close-btn:hover, .refresh-btn:hover, .reload-btn:hover { opacity: 1; }
+
+/* phone screens */
+@media (max-width: 768px) {
+  #action-buttons {
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  #selection-panel {
+    top: 48px;
+    left: 0;
+    width: 100%;
+    margin-bottom: 0px;
+  }
+  #selection-panel.collapsed {
+    display: none;
+  }
+  #output {
+    display: none;
+    padding: 0;
+  }
+  #output.expanded {
+    display: block;
+    padding: 64px 0 0;
+  }
+}
+
+/* Styles for Ad Analyzer UI */
+.goog-tree-icon, .goog-tree-expand-icon {
+  display: inline-block;
+}
+
+.goog-tree-item {
+  margin: 5px 0px;
+}
+
+.goog-tree-collapsed-folder-icon, .goog-tree-expanded-folder-icon {
+  cursor: pointer;
+}
+
+.goog-tree-item-label {
+  text-transform: lowercase;
+}
+
+#parse-button {
+  margin: 10px 0px;
+}
+
+#ad-analyzer .iframeContainer {
+  width: 100%;
+}
+
+#pla, #ad-analyzer { padding: 16px 0 0 352px; }
+#pla.expanded, #ad-analyzer.expanded { padding: 64px 0 0; }
+
+.plaIframe {
+  border: 1px solid #999;
+  box-sizing: content-box;
+}
+
+#native-css-textarea {
+  position: absolute;
+  z-index: 1000;
+}
+
+textarea.collapsed {
+  height: 34px;
+  width: 150px !important;
+  resize: none;
+  overflow: hidden;
+}
+
+textarea.expanded {
+  width: 320px;
+  height: 440px;
+  resize: vertical;
+  overflow: auto;
+}
+
+.night #selection-panel,
+.night #action-buttons {
+  background-color: #555555;
+  border-color: #777777;
+}
+
+.night a,
+.night a:active,
+.night a:visited {
+  /* light blue */
+  color: #abd1f1
+}
+.night a:hover {
+  text-decoration: underline;
+}
+
+.night #action-buttons button.btn-default,
+.night .input-group .input-group-addon {
+  background-color: #555555;
+  border-color: #777777;
+  color: #DDDDDD;
+}
+
+.night .nav-tabs>li.active>a {
+  background-color:transparent;
+  color: #EEEEEE;
+  font-weight: bold;
+}
+
+/* javascript/closure/css/tree.css */
+/*
+ * Copyright 2007 The Closure Library Authors. All Rights Reserved.
+ *
+ * Use of this source code is governed by the Apache License, Version 2.0.
+ * See the COPYING file for details.
+ */
+
+/* Author: arv@google.com (Erik Arvidsson) */
+/* Author: eae@google.com (Emil A Eklund) */
+/* Author: jonp@google.com (Jon Perlow) */
+
+/*
+  TODO(arv): Currently the sprite image has the height 16px. We should make the
+  image taller which would allow better flexibility when it comes to the height
+  of a tree row.
+*/
+
+.goog-tree-root:focus {
+  outline: none;
+}
+
+.goog-tree-row {
+  white-space: nowrap;
+  font: icon;
+  line-height: 16px;
+  height: 16px;
+}
+
+.goog-tree-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goog-tree-children {
+  background-repeat: repeat-y;
+  background-image: url(//ssl.gstatic.com/closure/tree/I.png) !important;
+  background-position-y: 1px !important;	/* IE only */
+  font: icon;
+}
+
+.goog-tree-children-nolines {
+  font: icon;
+}
+
+.goog-tree-icon {
+  background-image: url(//ssl.gstatic.com/closure/tree/tree.png);
+}
+
+.goog-tree-expand-icon {
+  vertical-align: middle;
+  height: 16px;
+  width: 16px;
+  cursor: default;
+}
+
+.goog-tree-expand-icon-plus {
+  width: 19px;
+  background-position: 0 0;
+}
+
+.goog-tree-expand-icon-minus {
+  width: 19px;
+  background-position: -24px 0;
+}
+
+.goog-tree-expand-icon-tplus {
+  width: 19px;
+  background-position: -48px 0;
+}
+
+.goog-tree-expand-icon-tminus {
+  width: 19px;
+  background-position: -72px 0;
+}
+
+.goog-tree-expand-icon-lplus {
+  width: 19px;
+  background-position: -96px 0;
+}
+
+.goog-tree-expand-icon-lminus {
+  width: 19px;
+  background-position: -120px 0;
+}
+
+.goog-tree-expand-icon-t {
+  width: 19px;
+  background-position: -144px 0;
+}
+
+.goog-tree-expand-icon-l {
+  width: 19px;
+  background-position: -168px 0;
+}
+
+.goog-tree-expand-icon-blank {
+  width: 19px;
+  background-position: -168px -24px;
+}
+
+.goog-tree-collapsed-folder-icon {
+  vertical-align: middle;
+  height: 16px;
+  width: 16px;
+  background-position: -0px -24px;
+}
+
+.goog-tree-expanded-folder-icon {
+  vertical-align: middle;
+  height: 16px;
+  width: 16px;
+  background-position: -24px -24px;
+}
+
+.goog-tree-file-icon {
+  vertical-align: middle;
+  height: 16px;
+  width: 16px;
+  background-position: -48px -24px;
+}
+
+.goog-tree-item-label {
+  margin-left: 3px;
+  padding: 1px 2px 1px 2px;
+  text-decoration: none;
+  color: WindowText;
+  cursor: default;
+}
+
+.goog-tree-item-label:hover {
+  text-decoration: underline;
+}
+
+.selected .goog-tree-item-label {
+  background-color: ButtonFace;
+  color: ButtonText;
+}
+
+.focused .selected .goog-tree-item-label {
+  background-color: Highlight;
+  color: HighlightText;
+}
+
+.goog-tree-hide-root {
+  display: none;
+}
+
